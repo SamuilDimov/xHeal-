@@ -1,0 +1,4270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>xHeal</title>
+
+<!-- PWA / Add to Home Screen -->
+<link rel="manifest" href="manifest.json" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="xHeal" />
+<meta name="theme-color" content="#000E1B" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --primary: #4764FF;
+    --secondary: #8C9DFF;
+    --accent: #FA4169;
+    --text-primary: #F0F2FD;
+    --text-secondary: #BCBCBF;
+    --text-tertiary: #878CA8;
+    --text-disabled: #505573;
+    --text-inverse: #FFFFFF;
+    --bg-primary: #000E1B;
+    --bg-secondary: #0C1222;
+    --bg-tertiary: #111828;
+    --border-default: #141D2E;
+    --border-subtle: #0F1725;
+    --border-medium: #1E2740;
+    --surface-card: #0C1222;
+    --surface-card-inner: #0A1A2A;
+    --surface-elevated: #111828;
+    --status-success: #2ED8A3;
+    --cat-physical: #FF9F1C;
+    --cat-physical-bg: rgba(255, 159, 28, 0.10);
+    --cat-physical-glow: rgba(255, 159, 28, 0.18);
+    --cat-nutrition: #2ED8A3;
+    --cat-nutrition-bg: rgba(46, 216, 163, 0.10);
+    --cat-nutrition-glow: rgba(46, 216, 163, 0.18);
+    --cat-mental: #A855F7;
+    --cat-mental-bg: rgba(168, 85, 247, 0.10);
+    --cat-mental-glow: rgba(168, 85, 247, 0.18);
+    --cat-medical: #FA4169;
+    --cat-medical-bg: rgba(250, 65, 105, 0.10);
+    --slider-1: #4DA14D; --slider-2: #9ACD32; --slider-3: #F6A724;
+    --slider-4: #FF6B35; --slider-5: #FF4D4D;
+    --font: 'Manrope', system-ui, -apple-system, sans-serif;
+    --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-full: 999px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
+  html, body { margin: 0; padding: 0; }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { display: none; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg-primary);
+    min-height: 100vh;
+    min-height: 100dvh;
+    color: var(--text-primary);
+    overflow-x: hidden;
+    overscroll-behavior: none;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(60% 40% at 80% 0%, rgba(71, 100, 255, 0.12), transparent 60%),
+      radial-gradient(50% 30% at 0% 100%, rgba(168, 85, 247, 0.08), transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+
+  /* Phone frame */
+  .frame {
+    max-width: 390px; margin: 0 auto;
+    min-height: 100vh; position: relative; z-index: 1;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+
+
+  /* Stepper (onboarding) */
+  .stepper { display: flex; gap: 4px; padding: 8px 24px 16px; }
+  .stepper-seg {
+    flex: 1; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.08); overflow: hidden; position: relative;
+  }
+  .stepper-seg.done { background: var(--primary); }
+  .stepper-seg.active::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transform-origin: left; animation: fillProgress 0.6s ease-out forwards;
+  }
+  @keyframes fillProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* Common headings */
+  .h-pad { padding: 8px 24px 0; }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; color: var(--text-tertiary);
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;
+  }
+  h1.title {
+    font-size: 28px; font-weight: 800; line-height: 1.18;
+    color: var(--text-primary); letter-spacing: -0.5px;
+    margin: 0 0 8px;
+  }
+  .subtitle {
+    font-size: 14px; line-height: 1.5; color: var(--text-secondary);
+    margin: 0 0 20px; max-width: 340px;
+  }
+  .back-btn {
+    background: transparent; border: none;
+    width: 40px; height: 40px; border-radius: var(--r-full);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-primary); cursor: pointer;
+    margin-left: 16px; margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.04); }
+  .back-btn i { width: 20px; height: 20px; }
+
+  /* CTA */
+  .cta-wrap {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    max-width: 390px; margin: 0 auto;
+    padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent 0%, var(--bg-primary) 35%);
+    z-index: 1000;
+  }
+  .cta {
+    width: 100%; height: 54px; border-radius: var(--r-lg); border: none;
+    background: var(--primary); color: var(--text-inverse);
+    font-family: var(--font); font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.15s, opacity 0.2s, background 0.2s;
+    box-shadow: 0 8px 24px rgba(71, 100, 255, 0.3);
+  }
+  .cta:hover { transform: translateY(-1px); }
+  .cta:active { transform: scale(0.98); }
+  .cta:disabled {
+    background: var(--surface-elevated); color: var(--text-disabled);
+    cursor: default; box-shadow: none; transform: none;
+  }
+  .cta i { width: 18px; height: 18px; }
+
+  /* Welcome */
+  .welcome {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh; padding: 32px 24px 40px;
+    text-align: center; position: relative;
+  }
+  .welcome-mascot-wrap {
+    position: relative;
+    margin-bottom: 28px;
+    animation: floatIn 0.8s ease-out;
+  }
+  .welcome-mascot-wrap::before {
+    content: ''; position: absolute; inset: -40px;
+    background: radial-gradient(circle, rgba(71, 100, 255, 0.25), transparent 65%);
+    z-index: -1;
+    animation: pulse 4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.08); }
+  }
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .welcome-brand {
+    font-size: 12px; font-weight: 700; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--primary);
+    margin-bottom: 12px;
+    animation: fadeUp 0.6s ease-out 0.2s backwards;
+  }
+  .welcome-title {
+    font-size: 32px; font-weight: 800; line-height: 1.12;
+    letter-spacing: -0.7px; margin: 0 0 14px;
+    animation: fadeUp 0.6s ease-out 0.4s backwards;
+  }
+  .welcome-title em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--secondary), #A855F7);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .welcome-sub {
+    font-size: 15px; line-height: 1.5; color: var(--text-secondary);
+    max-width: 320px; margin: 0 auto 32px;
+    animation: fadeUp 0.6s ease-out 0.6s backwards;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .welcome-features {
+    display: flex; flex-direction: column; gap: 10px;
+    width: 100%; max-width: 340px; margin-bottom: 28px;
+    animation: fadeUp 0.6s ease-out 0.8s backwards;
+  }
+  .welcome-feature {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md); text-align: left;
+  }
+  .welcome-feature-icon {
+    width: 30px; height: 30px; border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .welcome-feature-icon i { width: 16px; height: 16px; }
+  .welcome-feature-text {
+    font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--text-secondary);
+  }
+  .welcome-feature-text strong { color: var(--text-primary); font-weight: 700; }
+  .welcome-cta {
+    width: 100%; max-width: 340px;
+    height: 54px; border-radius: var(--r-lg); border: none;
+    background: var(--primary); color: var(--text-inverse);
+    font-family: var(--font); font-size: 15px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 8px 24px rgba(71, 100, 255, 0.3);
+    animation: fadeUp 0.6s ease-out 1s backwards;
+    transition: transform 0.15s;
+  }
+  .welcome-cta:hover { transform: translateY(-1px); }
+  .welcome-cta:active { transform: scale(0.98); }
+  .welcome-cta i { width: 18px; height: 18px; }
+
+  /* Selection strip (goals) */
+  .selection-strip {
+    margin: 0 24px 14px;
+    padding: 12px 14px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .selection-strip-meter { display: flex; gap: 6px; flex-shrink: 0; }
+  .selection-strip-dot {
+    width: 26px; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.08); transition: background 0.3s;
+  }
+  .selection-strip-dot[data-cat="physical"]  { background: var(--cat-physical); }
+  .selection-strip-dot[data-cat="nutrition"] { background: var(--cat-nutrition); }
+  .selection-strip-dot[data-cat="mental"]    { background: var(--cat-mental); }
+  .selection-strip-dot[data-cat="medical"]   { background: var(--cat-medical); }
+  .selection-strip-text {
+    flex: 1; font-size: 13px; line-height: 1.4; color: var(--text-secondary);
+  }
+  .selection-strip-text strong { color: var(--text-primary); font-weight: 700; }
+
+  /* GOAL LIST */
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .goal-list {
+    padding: 0 24px 16px;
+    display: flex; flex-direction: column;
+    gap: 8px;
+  }
+  .goal-row {
+    position: relative;
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: 13px 16px 13px 18px;
+    cursor: pointer; text-align: left;
+    color: var(--text-primary); font-family: var(--font);
+    transition: border-color 0.25s, background 0.25s, transform 0.12s, box-shadow 0.25s, opacity 0.25s;
+    display: flex; align-items: center; gap: 14px;
+    overflow: hidden;
+    animation: rowIn 0.4s ease-out backwards;
+  }
+  .goal-row:nth-child(1)  { animation-delay: 0.04s; }
+  .goal-row:nth-child(2)  { animation-delay: 0.07s; }
+  .goal-row:nth-child(3)  { animation-delay: 0.10s; }
+  .goal-row:nth-child(4)  { animation-delay: 0.13s; }
+  .goal-row:nth-child(5)  { animation-delay: 0.16s; }
+  .goal-row:nth-child(6)  { animation-delay: 0.19s; }
+  .goal-row:nth-child(7)  { animation-delay: 0.22s; }
+  .goal-row:nth-child(8)  { animation-delay: 0.25s; }
+  .goal-row:nth-child(9)  { animation-delay: 0.28s; }
+  .goal-row:nth-child(10) { animation-delay: 0.31s; }
+  .goal-row:nth-child(11) { animation-delay: 0.34s; }
+  .goal-row:nth-child(12) { animation-delay: 0.37s; }
+  .goal-row:active { transform: scale(0.99); }
+
+  .goal-row::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--cat); opacity: 0.5;
+    transition: opacity 0.25s ease;
+  }
+  .goal-row[data-selected="true"]::before { opacity: 1; }
+  .goal-row[data-selected="true"] {
+    border-color: var(--cat);
+    background: linear-gradient(90deg, var(--cat-bg), transparent 70%), var(--surface-card);
+    box-shadow: 0 4px 16px var(--cat-glow);
+  }
+  .goal-row[data-disabled="true"] { opacity: 0.35; cursor: default; }
+
+  .goal-row-icon {
+    width: 40px; height: 40px; border-radius: var(--r-sm);
+    background: var(--surface-card-inner);
+    color: var(--cat);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.25s, color 0.25s;
+  }
+  .goal-row-icon i { width: 20px; height: 20px; stroke-width: 2; }
+  .goal-row[data-selected="true"] .goal-row-icon {
+    background: var(--cat); color: var(--bg-primary);
+  }
+  .goal-row-text { flex: 1; min-width: 0; }
+  .goal-row-name {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    line-height: 1.3; margin-bottom: 2px;
+  }
+  .goal-row-desc {
+    font-size: 12px; line-height: 1.4;
+    color: var(--text-tertiary); font-weight: 500;
+  }
+  .goal-row[data-selected="true"] .goal-row-desc { color: var(--text-secondary); }
+  .goal-row-pick {
+    width: 22px; height: 22px; border-radius: var(--r-full);
+    border: 1.5px solid var(--border-medium); flex-shrink: 0;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .goal-row-priority {
+    flex-shrink: 0;
+    padding: 5px 10px; border-radius: var(--r-full);
+    background: var(--cat); color: var(--bg-primary);
+    font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
+    white-space: nowrap;
+    animation: badgeIn 0.3s ease-out;
+  }
+  @keyframes badgeIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* CONDITIONS */
+  /* Condition search */
+  .condition-search-wrap {
+    margin: 0 24px 12px;
+    position: relative;
+    display: flex; align-items: center;
+  }
+  .condition-search-icon {
+    position: absolute; left: 14px;
+    color: var(--text-tertiary);
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .condition-search-icon i { width: 16px; height: 16px; }
+  .condition-search-input {
+    width: 100%;
+    padding: 11px 40px 11px 38px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 14px; font-weight: 500;
+    transition: border-color 0.2s;
+  }
+  .condition-search-input:focus { outline: none; border-color: var(--primary); }
+  .condition-search-input::placeholder { color: var(--text-tertiary); }
+  .condition-search-clear {
+    position: absolute; right: 6px;
+    width: 30px; height: 30px; border-radius: var(--r-full);
+    background: transparent; border: none;
+    color: var(--text-tertiary); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .condition-search-clear:hover { background: var(--surface-card-inner); color: var(--text-primary); }
+  .condition-search-clear i { width: 14px; height: 14px; }
+
+  /* Divider above pinned Other + None */
+  .condition-divider {
+    height: 1px; margin: 12px 0 4px;
+    background: var(--border-default);
+  }
+
+  /* Empty state when search yields no results */
+  .condition-empty {
+    padding: 20px 16px;
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface-card);
+    border: 1px dashed var(--border-medium);
+    border-radius: var(--r-md);
+  }
+  .condition-empty-icon {
+    width: 38px; height: 38px; border-radius: var(--r-sm);
+    background: var(--surface-card-inner);
+    color: var(--text-tertiary);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .condition-empty-icon i { width: 20px; height: 20px; }
+  .condition-empty-text {
+    font-size: 13px; line-height: 1.45; color: var(--text-secondary);
+  }
+  .condition-empty-text strong { color: var(--text-primary); font-weight: 700; }
+
+  .condition-list { padding: 0 24px; display: flex; flex-direction: column; gap: 8px; }
+  .condition-card {
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+    cursor: pointer; color: var(--text-primary); font-family: var(--font);
+    transition: border-color 0.25s, background 0.25s, transform 0.15s, opacity 0.25s;
+    text-align: left;
+    display: flex; align-items: center; gap: 12px;
+    animation: rowIn 0.4s ease-out backwards;
+  }
+  .condition-card:active { transform: scale(0.98); }
+  .condition-card.selected {
+    border-color: var(--primary);
+    background: rgba(71, 100, 255, 0.08);
+    box-shadow: 0 0 0 1px var(--primary), 0 4px 16px rgba(71, 100, 255, 0.2);
+  }
+  .condition-card[data-disabled="true"] { opacity: 0.4; cursor: default; }
+  .condition-icon {
+    width: 38px; height: 38px; border-radius: var(--r-sm);
+    background: var(--surface-card-inner); color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: background 0.25s, color 0.25s;
+  }
+  .condition-icon i { width: 20px; height: 20px; }
+  .condition-card.selected .condition-icon {
+    background: var(--primary); color: var(--text-inverse);
+  }
+  .condition-text { flex: 1; min-width: 0; }
+  .condition-name {
+    font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3;
+    margin-bottom: 2px;
+  }
+  .condition-sub {
+    font-size: 12px; line-height: 1.35;
+    color: var(--text-tertiary); font-weight: 500;
+  }
+  .condition-card.selected .condition-sub { color: var(--text-secondary); }
+  .condition-check {
+    width: 22px; height: 22px; border-radius: var(--r-full);
+    border: 1.5px solid var(--border-medium); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .condition-card.selected .condition-check {
+    background: var(--primary); border-color: var(--primary);
+  }
+  .condition-check i { width: 13px; height: 13px; color: var(--text-inverse); stroke-width: 3; }
+
+  /* Other input */
+  .other-input-wrap {
+    margin: 4px 0 4px;
+    padding: 12px 14px;
+    background: var(--surface-card);
+    border: 1.5px solid var(--primary);
+    border-radius: var(--r-md);
+    box-shadow: 0 0 0 1px var(--primary), 0 4px 16px rgba(71, 100, 255, 0.2);
+    animation: rowIn 0.3s ease-out;
+  }
+  .other-input-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--primary); margin-bottom: 6px;
+  }
+  .other-input {
+    width: 100%;
+    background: var(--surface-card-inner);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--r-sm);
+    padding: 11px 12px;
+    color: var(--text-primary); font-family: var(--font);
+    font-size: 14px; font-weight: 500;
+    transition: border-color 0.2s;
+  }
+  .other-input:focus {
+    outline: none; border-color: var(--primary); background: var(--surface-elevated);
+  }
+  .other-input::placeholder { color: var(--text-tertiary); }
+
+  /* Modifier card */
+  .modifier-card {
+    margin: 14px 24px 0;
+    padding: 14px;
+    background: linear-gradient(135deg, rgba(71, 100, 255, 0.06), transparent 60%), var(--surface-card);
+    border: 1px solid var(--primary);
+    border-radius: var(--r-lg);
+    box-shadow: 0 4px 20px rgba(71, 100, 255, 0.12);
+    animation: fadeUp 0.4s ease-out;
+  }
+  .modifier-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .modifier-icon-wrap {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: rgba(71, 100, 255, 0.15); color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modifier-icon-wrap i { width: 13px; height: 13px; }
+  .modifier-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--primary);
+  }
+  .modifier-item { padding: 8px 0; border-top: 1px solid var(--border-default); }
+  .modifier-item:first-of-type { border-top: none; padding-top: 2px; }
+  .modifier-name {
+    font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px;
+  }
+  .modifier-impact {
+    font-size: 12px; line-height: 1.5; color: var(--text-secondary); margin-bottom: 6px;
+  }
+  .modifier-pillar {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: var(--r-full);
+    background: rgba(46, 216, 163, 0.12);
+    border: 1px solid rgba(46, 216, 163, 0.3);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.3px; color: var(--status-success);
+  }
+  .modifier-pillar i { width: 11px; height: 11px; }
+  .modifier-note {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border-default);
+    font-size: 11px; line-height: 1.5; color: var(--text-tertiary);
+  }
+  .modifier-note strong { color: var(--text-secondary); }
+
+  /* Intensity slider */
+  .intensity-mascot-wrap {
+    display: flex; justify-content: center; padding: 10px 0 22px; position: relative;
+  }
+  .intensity-mascot-wrap::before {
+    content: ''; position: absolute; inset: 14px 80px;
+    background: radial-gradient(circle, rgba(71, 100, 255, 0.2), transparent 70%); z-index: 0;
+  }
+  .intensity-mascot { position: relative; z-index: 1; }
+  .intensity-display { text-align: center; padding: 0 24px; }
+  .intensity-name {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+    color: var(--text-primary); margin: 0 0 6px;
+  }
+  .intensity-desc {
+    font-size: 13px; line-height: 1.5; color: var(--text-secondary);
+    margin: 0 auto 12px; max-width: 300px; min-height: 42px;
+  }
+  .intensity-time-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--r-full);
+    color: var(--text-secondary);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+    margin: 0 auto 24px;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .intensity-time-pill i { width: 13px; height: 13px; stroke-width: 2.4; }
+  .slider-wrap { padding: 0 32px; }
+  .slider-rail {
+    position: relative; height: 6px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--slider-1), var(--slider-2), var(--slider-3), var(--slider-4), var(--slider-5));
+    margin-bottom: 12px;
+  }
+  .slider-thumb {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 26px; height: 26px; border-radius: var(--r-full);
+    background: var(--text-inverse); border: 3px solid var(--bg-primary);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+    cursor: grab; transition: transform 0.15s ease, left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .slider-thumb:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.15); }
+  .slider-ticks {
+    display: flex; justify-content: space-between;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+    color: var(--text-tertiary); text-transform: uppercase; padding: 0 2px;
+  }
+  .slider-tick { transition: color 0.3s, font-weight 0.3s; white-space: nowrap; text-align: center; }
+  .slider-tick.active { color: var(--text-primary); font-weight: 700; }
+
+  /* Tone */
+  /* Tone preview — animated message panel */
+  .tone-preview {
+    margin: 0 24px 18px;
+    padding: 14px 14px 14px 16px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-lg);
+    display: flex; align-items: center; gap: 14px;
+    transition: border-color 0.4s, background 0.4s;
+    position: relative;
+    overflow: hidden;
+    min-height: 92px;
+  }
+  .tone-preview.empty {
+    border-style: dashed;
+    border-color: var(--border-medium);
+    opacity: 0.85;
+  }
+  .tone-preview.active.punch {
+    animation: tonePreviewPunch 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes tonePreviewPunch {
+    0%   { transform: scale(0.97); }
+    60%  { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  /* Color the preview by mood */
+  .tone-preview[data-tone-mood="curious"]     { border-color: rgba(71, 100, 255, 0.4);  background: linear-gradient(135deg, rgba(71, 100, 255, 0.05),  transparent 70%), var(--surface-card); }
+  .tone-preview[data-tone-mood="encouraging"] { border-color: rgba(46, 216, 163, 0.45); background: linear-gradient(135deg, rgba(46, 216, 163, 0.06), transparent 70%), var(--surface-card); }
+  .tone-preview[data-tone-mood="proud"]       { border-color: rgba(255, 159, 28, 0.45); background: linear-gradient(135deg, rgba(255, 159, 28, 0.06), transparent 70%), var(--surface-card); }
+
+  .tone-preview-mascot {
+    flex-shrink: 0;
+    width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .tone-preview-mascot::before {
+    content: '';
+    position: absolute; inset: -4px;
+    background: radial-gradient(circle, var(--preview-glow, transparent), transparent 65%);
+    pointer-events: none;
+    transition: background 0.4s;
+  }
+  .tone-preview[data-tone-mood="curious"]     { --preview-glow: rgba(71, 100, 255, 0.25); }
+  .tone-preview[data-tone-mood="encouraging"] { --preview-glow: rgba(46, 216, 163, 0.28); }
+  .tone-preview[data-tone-mood="proud"]       { --preview-glow: rgba(255, 159, 28, 0.28); }
+
+  .tone-preview-bubble {
+    flex: 1; min-width: 0;
+    position: relative;
+    padding: 10px 14px;
+    background: var(--surface-card-inner);
+    border-radius: var(--r-md);
+    border: 1px solid var(--border-default);
+  }
+  /* Speech-bubble tail pointing at the mascot */
+  .tone-preview-bubble::before {
+    content: '';
+    position: absolute; left: -7px; top: 18px;
+    width: 0; height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-right: 7px solid var(--border-default);
+  }
+  .tone-preview-bubble::after {
+    content: '';
+    position: absolute; left: -5px; top: 19px;
+    width: 0; height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid var(--surface-card-inner);
+  }
+  .tone-preview-text {
+    font-size: 14px; line-height: 1.45; font-weight: 600;
+    color: var(--text-primary);
+    transition: opacity 0.2s ease;
+    min-height: 20px;
+  }
+  .tone-preview-text.fading {
+    opacity: 0;
+  }
+  .tone-preview-empty {
+    font-size: 13px; color: var(--text-tertiary); font-weight: 500;
+    font-style: italic;
+  }
+
+  .tone-list { padding: 6px 24px 0; display: flex; flex-direction: column; gap: 10px; }
+  .tone-card {
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--r-lg);
+    padding: 16px 16px 16px 18px;
+    cursor: pointer; color: var(--text-primary); font-family: var(--font);
+    transition: border-color 0.25s, background 0.25s, transform 0.15s;
+    text-align: left; display: flex; align-items: center; gap: 14px;
+    animation: rowIn 0.4s ease-out backwards;
+  }
+  .tone-card:active { transform: scale(0.98); }
+  .tone-card.selected {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(71, 100, 255, 0.08), transparent), var(--surface-card);
+    box-shadow: 0 0 0 1px var(--primary), 0 8px 24px rgba(71, 100, 255, 0.2);
+  }
+  .tone-mascot-wrap {
+    flex-shrink: 0; width: 54px; height: 54px; border-radius: var(--r-md);
+    background: var(--surface-card-inner);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s;
+  }
+  .tone-card.selected .tone-mascot-wrap { background: rgba(71, 100, 255, 0.12); }
+  .tone-content { flex: 1; min-width: 0; }
+  .tone-name { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+  .tone-desc { font-size: 12px; line-height: 1.4; color: var(--text-secondary); }
+  .tone-radio {
+    width: 22px; height: 22px; border-radius: var(--r-full);
+    border: 2px solid var(--border-medium); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .tone-radio-inner {
+    width: 10px; height: 10px; border-radius: var(--r-full);
+    background: var(--primary); transform: scale(0);
+    transition: transform 0.2s ease;
+  }
+  .tone-card.selected .tone-radio { border-color: var(--primary); }
+  .tone-card.selected .tone-radio-inner { transform: scale(1); }
+
+  /* Summary handoff (between onboarding and routine) */
+  .handoff {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 100vh; padding: 32px 24px 120px;
+    text-align: center;
+  }
+  .handoff-mascot { position: relative; margin-bottom: 24px; animation: floatIn 0.7s ease-out; }
+  .handoff-mascot::before {
+    content: ''; position: absolute; inset: -28px;
+    background: radial-gradient(circle, rgba(46, 216, 163, 0.25), transparent 65%);
+    z-index: -1; animation: pulse 3.5s ease-in-out infinite;
+  }
+  .handoff-eyebrow {
+    color: var(--status-success);
+    font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
+    text-transform: uppercase; margin-bottom: 10px;
+    animation: fadeUp 0.5s ease-out 0.2s backwards;
+  }
+  .handoff-title {
+    font-size: 30px; font-weight: 800; line-height: 1.15;
+    margin: 0 0 14px; letter-spacing: -0.6px;
+    animation: fadeUp 0.5s ease-out 0.35s backwards;
+  }
+  .handoff-sub {
+    font-size: 14px; line-height: 1.5; color: var(--text-secondary);
+    max-width: 320px; margin: 0 0 28px;
+    animation: fadeUp 0.5s ease-out 0.5s backwards;
+  }
+  .handoff-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    width: 100%; max-width: 340px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.5s ease-out 0.65s backwards;
+  }
+  .handoff-stat {
+    padding: 14px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    text-align: left;
+  }
+  .handoff-stat-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-tertiary);
+    margin-bottom: 6px;
+  }
+  .handoff-stat-val {
+    font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3;
+  }
+
+  /* ─── ROUTINE SCREEN ─── */
+  .routine-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-primary);
+  }
+
+  .routine-header {
+    padding: 8px 24px 4px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .routine-title { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; margin: 0; }
+  .routine-date { font-size: 13px; color: var(--text-tertiary); font-weight: 500; margin-top: 2px; }
+  .routine-actions { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: var(--r-full);
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .icon-btn:hover { background: var(--surface-elevated); color: var(--text-primary); }
+  .icon-btn i { width: 18px; height: 18px; }
+
+  /* Week strip */
+  .week-strip {
+    padding: 8px 24px 4px;
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+  }
+  .day-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .day-name { font-size: 10px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 0.5px; }
+  .day-num { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
+  .day-cell.today .day-num, .day-cell.today .day-name { color: var(--primary); }
+  .day-ring {
+    width: 24px; height: 24px; border-radius: var(--r-full);
+    border: 1.5px solid var(--border-medium);
+    position: relative;
+  }
+  .day-cell.today .day-ring {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(71, 100, 255, 0.15);
+  }
+  .day-ring-fill {
+    position: absolute; inset: -1.5px; border-radius: var(--r-full);
+    background: conic-gradient(var(--status-success) var(--ring-pct, 0deg), transparent var(--ring-pct, 0deg));
+    -webkit-mask: radial-gradient(circle, transparent 60%, black 62%);
+            mask: radial-gradient(circle, transparent 60%, black 62%);
+  }
+  hr.divider { border: none; border-top: 1px solid var(--border-default); margin: 4px 24px 0; }
+
+  /* Progress card */
+  .progress-card {
+    margin: 8px 24px;
+    padding: 14px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-lg);
+    display: flex; align-items: center; gap: 14px;
+    overflow: hidden;
+    transition: border-color 0.4s, background 0.4s, transform 0.15s, box-shadow 0.25s;
+    position: relative;
+  }
+  .progress-card.pressable {
+    cursor: pointer;
+    text-align: left; font-family: var(--font); color: inherit;
+  }
+  .progress-card.pressable:hover { transform: translateY(-1px); }
+  .progress-card.pressable:active { transform: scale(0.99); }
+
+  .progress-chevron {
+    position: absolute; top: 12px; right: 12px;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-tertiary);
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .progress-chevron i { width: 16px; height: 16px; }
+  .progress-card:hover .progress-chevron { opacity: 1; transform: translateX(2px); }
+
+  .progress-label-hint {
+    color: var(--text-disabled);
+    font-weight: 600; text-transform: none; letter-spacing: 0.3px;
+  }
+  .progress-card[data-mood="curious"]    { border-color: rgba(71, 100, 255, 0.3); }
+  .progress-card[data-mood="encouraging"]{ border-color: rgba(46, 216, 163, 0.35); background: linear-gradient(135deg, rgba(46, 216, 163, 0.04), transparent 70%), var(--surface-card); }
+  .progress-card[data-mood="gentle"]     { border-color: rgba(168, 85, 247, 0.3); background: linear-gradient(135deg, rgba(168, 85, 247, 0.04), transparent 70%), var(--surface-card); }
+  .progress-card[data-mood="resting"]    { border-color: rgba(140, 157, 255, 0.25); background: linear-gradient(135deg, rgba(140, 157, 255, 0.04), transparent 70%), var(--surface-card); }
+  .progress-card[data-mood="happy"]      { border-color: var(--status-success); background: linear-gradient(135deg, rgba(46, 216, 163, 0.08), transparent 70%), var(--surface-card); box-shadow: 0 8px 32px rgba(46, 216, 163, 0.18); }
+  .progress-card[data-mood="proud"]      { border-color: rgba(255, 159, 28, 0.4); background: linear-gradient(135deg, rgba(255, 159, 28, 0.06), transparent 70%), var(--surface-card); box-shadow: 0 8px 32px rgba(255, 159, 28, 0.15); }
+
+  .progress-text { flex: 1; min-width: 0; }
+  .progress-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 4px;
+  }
+  .progress-count {
+    font-size: 34px; font-weight: 800; line-height: 1;
+    color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.8px;
+  }
+  .progress-count .slash { color: var(--text-disabled); font-weight: 700; margin: 0 2px; }
+  .progress-count .total { color: var(--text-tertiary); font-weight: 700; font-size: 24px; }
+  .progress-message {
+    font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--text-secondary);
+    max-width: 200px;
+  }
+  .progress-message strong { color: var(--text-primary); font-weight: 700; }
+
+  .progress-mascot {
+    flex-shrink: 0; width: 100px; height: 100px;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .progress-mascot::before {
+    content: ''; position: absolute; inset: 10px;
+    background: radial-gradient(circle, var(--mood-glow, transparent), transparent 65%);
+    pointer-events: none; transition: background 0.4s;
+  }
+  .progress-card[data-mood="curious"]     { --mood-glow: rgba(71, 100, 255, 0.18); }
+  .progress-card[data-mood="encouraging"] { --mood-glow: rgba(46, 216, 163, 0.25); }
+  .progress-card[data-mood="gentle"]      { --mood-glow: rgba(168, 85, 247, 0.22); }
+  .progress-card[data-mood="resting"]     { --mood-glow: rgba(140, 157, 255, 0.18); }
+  .progress-card[data-mood="happy"]       { --mood-glow: rgba(46, 216, 163, 0.35); }
+  .progress-card[data-mood="proud"]       { --mood-glow: rgba(255, 159, 28, 0.30); }
+
+  /* Section labels */
+  .section-label {
+    padding: 10px 24px 6px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--text-secondary); text-transform: uppercase;
+  }
+  .section-label i { width: 16px; height: 16px; }
+  .section-label[data-period="morning"]   { color: var(--cat-physical); }
+  .section-label[data-period="afternoon"] { color: var(--cat-nutrition); }
+  .section-label[data-period="evening"]   { color: var(--secondary); }
+
+  /* Task rows */
+  .task-list { padding: 0 24px; display: flex; flex-direction: column; gap: 8px; }
+  .task-row {
+    position: relative;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-lg);
+    cursor: pointer; color: var(--text-primary); font-family: var(--font);
+    text-align: left; overflow: hidden;
+    transition: background 0.25s, border-color 0.25s, opacity 0.4s;
+  }
+  .task-row::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--cat); opacity: 0.6;
+    transition: opacity 0.25s, background 0.4s; z-index: 1;
+  }
+  .task-row.expanded::before { opacity: 1; width: 4px; }
+  .task-header-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 16px; width: 100%;
+  }
+  .task-icon {
+    width: 38px; height: 38px; border-radius: var(--r-sm);
+    background: var(--cat-bg); color: var(--cat);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background 0.3s, color 0.3s;
+  }
+  .task-icon i { width: 19px; height: 19px; stroke-width: 2; }
+  .task-body { flex: 1; min-width: 0; }
+  .task-top {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;
+  }
+  .task-category {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+    text-transform: uppercase; padding: 2px 7px; border-radius: var(--r-full);
+    background: var(--cat-bg); color: var(--cat);
+  }
+  .task-time { font-size: 11px; font-weight: 600; color: var(--text-tertiary); }
+  .task-name { font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3; margin: 0; }
+  .task-meta { font-size: 11px; color: var(--text-tertiary); font-weight: 500; margin-top: 2px; }
+  .task-chevron {
+    color: var(--text-tertiary); transition: transform 0.3s; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .task-chevron i { width: 18px; height: 18px; }
+  .task-row.expanded .task-chevron { transform: rotate(180deg); }
+
+  .task-actions {
+    display: flex; gap: 8px; align-items: center;
+    padding: 0 16px 13px;
+    animation: slideDown 0.25s ease-out;
+  }
+  /* Variant B — action row REPLACES the task header content
+     Skip on left, primary (Fill in / Mark done) on right, X far right */
+  .task-actions-b {
+    padding: 13px 16px;            /* match the task header padding */
+    animation: fadeInOnly 0.2s ease-out;
+  }
+  @keyframes fadeInOnly {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .action-btn {
+    height: 42px; padding: 0 14px;
+    border-radius: var(--r-md); font-family: var(--font);
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: transform 0.12s, background 0.2s, border-color 0.2s, color 0.2s;
+    border: 1px solid transparent; flex-shrink: 0;
+  }
+  .action-btn:active { transform: scale(0.97); }
+  .action-btn i { width: 15px; height: 15px; stroke-width: 2.5; }
+
+  .action-primary {
+    flex: 1; background: var(--primary); color: var(--text-inverse);
+    box-shadow: 0 4px 12px rgba(71, 100, 255, 0.3);
+  }
+  .action-primary[data-kind="mark-done"] {
+    background: var(--status-success); color: var(--bg-primary);
+    box-shadow: 0 4px 12px rgba(46, 216, 163, 0.3);
+  }
+  .action-skip {
+    background: transparent; border-color: var(--border-medium);
+    color: var(--text-secondary); padding: 0 12px;
+  }
+  .action-skip:hover { background: var(--surface-elevated); color: var(--text-primary); }
+  .action-close {
+    width: 42px; padding: 0; background: transparent;
+    border-color: var(--border-medium); color: var(--text-tertiary);
+  }
+  .action-close i { width: 18px; height: 18px; }
+  .action-close:hover { color: var(--text-primary); }
+
+  /* Task state — completed, skipped */
+  .task-row.completed { opacity: 0.55; border-color: var(--border-subtle); }
+  .task-row.completed::before { background: var(--status-success); opacity: 0.7; }
+  .task-row.completed .task-name { text-decoration: line-through; color: var(--text-tertiary); }
+  .task-row.completed .task-icon { background: var(--status-success); color: var(--bg-primary); }
+  .task-row.skipped { opacity: 0.4; }
+  .task-row.skipped .task-name { color: var(--text-tertiary); }
+  .task-row.skipped::before { background: var(--text-disabled); opacity: 0.3; }
+  .skipped-badge {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+    padding: 3px 7px; border-radius: var(--r-full);
+    background: rgba(255,255,255,0.05); color: var(--text-tertiary);
+    border: 1px solid var(--border-medium);
+  }
+
+  /* ─── TASK DETAIL ─── */
+  .detail-header {
+    padding: 14px 24px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .detail-header .back-btn { margin: 0; }
+  .detail-category-pill {
+    padding: 4px 10px; border-radius: var(--r-full);
+    font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+    background: var(--cat-bg); color: var(--cat);
+  }
+  .detail-hero {
+    padding: 18px 24px 8px;
+  }
+  .detail-time-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .detail-time-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: var(--r-full);
+    background: var(--surface-card); border: 1px solid var(--border-default);
+    font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  }
+  .detail-time-pill i { width: 12px; height: 12px; }
+  .detail-name {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.4px; line-height: 1.2;
+    color: var(--text-primary); margin: 0 0 6px;
+  }
+  .detail-desc {
+    font-size: 14px; line-height: 1.5; color: var(--text-secondary);
+    margin: 0 0 6px;
+  }
+
+  /* Mascot watcher in detail view */
+  .detail-watcher {
+    position: relative;
+    display: flex; justify-content: center;
+    padding: 6px 0 16px;
+  }
+  .detail-watcher::before {
+    content: ''; position: absolute; inset: 8px 100px;
+    background: radial-gradient(circle, rgba(71, 100, 255, 0.16), transparent 65%);
+  }
+  .detail-watcher > * { position: relative; z-index: 1; }
+
+  /* Detail content blocks */
+  .detail-section {
+    padding: 0 24px;
+    margin-bottom: 18px;
+  }
+  .detail-section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-tertiary);
+    margin-bottom: 10px;
+  }
+
+  /* Inputs */
+  .field-input, .field-textarea {
+    width: 100%;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+    color: var(--text-primary); font-family: var(--font);
+    font-size: 14px; font-weight: 500;
+    transition: border-color 0.2s;
+  }
+  .field-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .field-input:focus, .field-textarea:focus { outline: none; border-color: var(--primary); }
+  .field-input::placeholder, .field-textarea::placeholder { color: var(--text-tertiary); }
+
+  /* Rating row (1-5 buttons) */
+  .rating-row { display: flex; gap: 6px; }
+  .rating-btn {
+    flex: 1; height: 48px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    color: var(--text-secondary);
+    font-family: var(--font);
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.12s;
+  }
+  .rating-btn:active { transform: scale(0.95); }
+  .rating-btn[aria-pressed="true"] {
+    background: var(--cat); border-color: var(--cat); color: var(--bg-primary);
+    box-shadow: 0 4px 12px var(--cat-glow);
+  }
+
+  /* Portion segmented control */
+  .segmented {
+    display: flex; gap: 6px;
+  }
+  .segmented-btn {
+    flex: 1; height: 46px;
+    background: var(--surface-card); border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    color: var(--text-secondary);
+    font-family: var(--font); font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.12s;
+  }
+  .segmented-btn:active { transform: scale(0.97); }
+  .segmented-btn[aria-pressed="true"] {
+    background: rgba(46, 216, 163, 0.12); border-color: var(--cat-nutrition); color: var(--cat-nutrition);
+  }
+  .segmented-btn i { width: 14px; height: 14px; }
+
+  /* Exercise list (strength logging) */
+  .exercise-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .exercise-name {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .set-row {
+    display: grid;
+    grid-template-columns: 26px 1fr 1fr 32px;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .set-row:first-of-type { border-top: none; }
+  .set-num {
+    font-size: 11px; font-weight: 700; color: var(--text-tertiary);
+    letter-spacing: 0.4px;
+  }
+  .set-input {
+    background: var(--surface-card-inner);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--r-sm);
+    padding: 6px 8px;
+    color: var(--text-primary);
+    font-family: var(--font); font-size: 13px; font-weight: 600;
+    text-align: center;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  .set-input:focus { outline: none; border-color: var(--cat-physical); }
+  .set-input-row {
+    position: relative;
+  }
+  .set-input-unit {
+    position: absolute;
+    right: 8px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+    pointer-events: none;
+  }
+  .set-remove {
+    background: transparent; border: none;
+    color: var(--text-disabled); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .set-remove i { width: 14px; height: 14px; }
+  .set-remove:hover { color: var(--accent); }
+  .add-set-btn {
+    margin-top: 6px; width: 100%;
+    background: transparent; border: 1px dashed var(--border-medium);
+    border-radius: var(--r-sm);
+    padding: 8px;
+    color: var(--text-tertiary);
+    font-family: var(--font); font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .add-set-btn i { width: 13px; height: 13px; }
+  .add-set-btn:hover { color: var(--text-secondary); border-color: var(--text-tertiary); }
+
+  /* Macro estimates panel */
+  .estimate-card {
+    margin: 0 24px 14px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(46, 216, 163, 0.05), transparent 70%), var(--surface-card);
+    border: 1px solid rgba(46, 216, 163, 0.2);
+    border-radius: var(--r-md);
+  }
+  .estimate-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+    color: var(--status-success); margin-bottom: 6px;
+  }
+  .estimate-row {
+    display: flex; gap: 12px;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .estimate-row strong { color: var(--text-primary); font-weight: 700; }
+
+  /* Detail CTA stack */
+  .detail-cta-wrap {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    max-width: 390px; width: 100%;
+    padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent 0%, var(--bg-primary) 35%);
+    z-index: 1000;
+    display: flex; gap: 8px;
+  }
+  .detail-cta-skip {
+    flex: 0 0 auto;
+    height: 52px; padding: 0 18px;
+    background: transparent; border: 1px solid var(--border-medium);
+    border-radius: var(--r-lg);
+    color: var(--text-secondary);
+    font-family: var(--font); font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .detail-cta-skip i { width: 16px; height: 16px; }
+  .detail-cta-skip:hover { color: var(--text-primary); background: var(--surface-elevated); }
+  .detail-cta-complete {
+    flex: 1; height: 52px;
+    background: var(--status-success);
+    border: none; border-radius: var(--r-lg);
+    color: var(--bg-primary);
+    font-family: var(--font); font-size: 15px; font-weight: 800;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 8px 24px rgba(46, 216, 163, 0.3);
+    transition: transform 0.15s;
+  }
+  .detail-cta-complete:active { transform: scale(0.98); }
+  .detail-cta-complete:disabled {
+    background: var(--surface-elevated); color: var(--text-disabled); cursor: default;
+    box-shadow: none;
+  }
+  .detail-cta-complete i { width: 18px; height: 18px; stroke-width: 2.5; }
+
+  /* Completion overlay */
+  .completion-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg-primary);
+    z-index: 200;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .completion-overlay.show {
+    opacity: 1; pointer-events: auto;
+  }
+  .completion-mascot {
+    position: relative;
+    animation: completionScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .completion-mascot::before {
+    content: ''; position: absolute; inset: -36px;
+    background: radial-gradient(circle, rgba(46, 216, 163, 0.4), transparent 65%);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes completionScale {
+    from { transform: scale(0.4) rotate(-12deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .completion-message {
+    margin-top: 24px;
+    font-size: 24px; font-weight: 800; letter-spacing: -0.4px;
+    color: var(--text-primary);
+    text-align: center;
+    animation: fadeUp 0.5s ease-out 0.3s backwards;
+  }
+  .completion-sub {
+    margin-top: 6px;
+    font-size: 14px; color: var(--text-secondary);
+    text-align: center;
+    animation: fadeUp 0.5s ease-out 0.45s backwards;
+  }
+
+  /* Skip sheet */
+  .skip-sheet {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    max-width: 390px; width: 100%;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-default);
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    padding: 20px 24px 28px;
+    z-index: 100;
+    transform: translate(-50%, 100%);
+    transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.5);
+  }
+  .skip-sheet.open { transform: translate(-50%, 0); }
+  .skip-sheet-handle {
+    width: 40px; height: 4px; border-radius: 2px;
+    background: var(--border-medium); margin: 0 auto 18px;
+  }
+  .skip-sheet-mascot {
+    display: flex; justify-content: center; margin-bottom: 14px;
+    position: relative;
+  }
+  .skip-sheet-mascot::before {
+    content: ''; position: absolute; inset: -20px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 65%); z-index: 0;
+  }
+  .skip-sheet-mascot > * { position: relative; z-index: 1; }
+  .skip-sheet-title {
+    font-size: 19px; font-weight: 800; color: var(--text-primary);
+    text-align: center; margin: 0 0 4px; letter-spacing: -0.2px;
+  }
+  .skip-sheet-sub {
+    font-size: 13px; color: var(--text-secondary);
+    text-align: center; line-height: 1.5; margin: 0 0 22px;
+  }
+  .skip-option {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 13px;
+    background: var(--surface-card);
+    border: 1.5px solid var(--border-default);
+    border-radius: var(--r-md);
+    cursor: pointer; text-align: left;
+    margin-bottom: 10px;
+    transition: border-color 0.2s, background 0.2s;
+    width: 100%; color: var(--text-primary); font-family: var(--font);
+  }
+  .skip-option:hover { border-color: var(--border-medium); background: var(--surface-elevated); }
+  .skip-option:active { transform: scale(0.98); }
+  .skip-option-icon {
+    width: 34px; height: 34px; border-radius: var(--r-sm);
+    background: rgba(168, 85, 247, 0.12); color: #A855F7;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .skip-option[data-kind="indef"] .skip-option-icon {
+    background: rgba(140, 157, 255, 0.12); color: var(--secondary);
+  }
+  .skip-option-icon i { width: 17px; height: 17px; }
+  .skip-option-text { flex: 1; }
+  .skip-option-name {
+    font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;
+  }
+  .skip-option-desc {
+    font-size: 12px; color: var(--text-tertiary); line-height: 1.4;
+  }
+  .skip-option-arrow {
+    color: var(--text-tertiary);
+    display: flex; align-items: center;
+    flex-shrink: 0;
+  }
+  .skip-option-arrow i { width: 16px; height: 16px; }
+  /* Substitute — visually distinct as the 'still counts' option */
+  .skip-option-substitute {
+    border-color: rgba(46, 216, 163, 0.35);
+    background: linear-gradient(135deg, rgba(46, 216, 163, 0.06), transparent 70%), var(--surface-card);
+  }
+  .skip-option-substitute:hover {
+    border-color: var(--status-success);
+    background: linear-gradient(135deg, rgba(46, 216, 163, 0.10), transparent 70%), var(--surface-elevated);
+  }
+  .skip-option-substitute .skip-option-icon {
+    background: rgba(46, 216, 163, 0.15); color: var(--status-success);
+  }
+  .skip-option-substitute .skip-option-arrow {
+    color: var(--status-success);
+  }
+  .skip-sheet-cancel {
+    width: 100%; padding: 12px;
+    background: transparent; border: none;
+    color: var(--text-tertiary);
+    font-family: var(--font); font-size: 13px; font-weight: 600;
+    cursor: pointer; margin-top: 6px;
+  }
+
+  /* ─── TUNE GOAL SHEET ─── */
+  .tune-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 14, 27, 0.65);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.28s ease;
+    z-index: 130;
+  }
+  .tune-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .tune-sheet {
+    position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    max-width: 390px; width: 100%;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-medium);
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    padding: 14px 24px 24px;
+    z-index: 140;
+    transition: transform 0.36s cubic-bezier(0.32, 0.72, 0.0, 1.0);
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.55);
+    max-height: 86vh; overflow-y: auto;
+  }
+  .tune-sheet.open { transform: translateX(-50%) translateY(0); }
+  .tune-sheet-handle {
+    width: 40px; height: 4px; border-radius: 2px;
+    background: var(--border-medium); margin: 0 auto 16px;
+  }
+  .tune-sheet-header { margin-bottom: 18px; }
+  .tune-sheet-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+  .tune-sheet-title {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.3px;
+    color: var(--text-primary);
+  }
+  .tune-sheet-body { display: flex; flex-direction: column; gap: 18px; margin-bottom: 18px; }
+
+  .tune-row { }
+  .tune-row-label-line {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .tune-row-label {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+  }
+  .tune-row-value {
+    font-size: 12px; font-weight: 700;
+    color: var(--primary);
+  }
+  /* 3-point segmented slider — single rail, three positions */
+  .tune-segmented {
+    display: flex; gap: 6px;
+    background: var(--surface-card-inner);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: 4px;
+  }
+  .tune-segmented-btn {
+    flex: 1; padding: 9px 6px;
+    background: transparent; border: none;
+    color: var(--text-tertiary);
+    font-family: var(--font);
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; border-radius: var(--r-sm);
+    transition: background 0.2s, color 0.2s, transform 0.12s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    text-align: center;
+  }
+  .tune-segmented-btn:active { transform: scale(0.96); }
+  .tune-segmented-btn[aria-pressed="true"] {
+    background: var(--primary); color: var(--text-inverse);
+    box-shadow: 0 2px 8px rgba(71, 100, 255, 0.3);
+  }
+  .tune-segmented-btn i { width: 13px; height: 13px; }
+
+  .tune-warning {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: rgba(255, 159, 28, 0.08);
+    border: 1px solid rgba(255, 159, 28, 0.3);
+    border-radius: var(--r-md);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .tune-warning-icon {
+    width: 24px; height: 24px;
+    color: #FF9F1C;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tune-warning-icon i { width: 18px; height: 18px; }
+  .tune-warning-text {
+    font-size: 12px; line-height: 1.5; color: var(--text-secondary);
+  }
+  .tune-warning-text strong {
+    color: var(--text-primary); font-weight: 700;
+  }
+
+  .tune-sheet-footer {
+    display: flex; gap: 8px;
+  }
+  .tune-cancel {
+    flex: 0 0 auto; padding: 0 18px; height: 52px;
+    background: transparent;
+    border: 1px solid var(--border-medium);
+    border-radius: var(--r-lg);
+    color: var(--text-secondary);
+    font-family: var(--font); font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .tune-cancel:hover { background: var(--surface-elevated); color: var(--text-primary); }
+  .tune-apply {
+    flex: 1; height: 52px;
+    background: var(--primary);
+    border: none; border-radius: var(--r-lg);
+    color: var(--text-inverse);
+    font-family: var(--font); font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 8px 24px rgba(71, 100, 255, 0.3);
+    transition: transform 0.12s;
+  }
+  .tune-apply:active { transform: scale(0.98); }
+  .tune-apply i { width: 17px; height: 17px; stroke-width: 2.5; }
+
+  /* ─── TUNE LOADING OVERLAY ─── */
+  .tune-loading {
+    position: fixed; inset: 0;
+    background: var(--bg-primary);
+    z-index: 200;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .tune-loading.show { opacity: 1; pointer-events: auto; }
+  .tune-loading-mascot {
+    position: relative;
+    animation: tuneLoadingPulse 2s ease-in-out infinite;
+  }
+  .tune-loading-mascot::before {
+    content: ''; position: absolute; inset: -42px;
+    background: radial-gradient(circle, rgba(71, 100, 255, 0.35), transparent 65%);
+    animation: tuneLoadingHalo 2s ease-in-out infinite;
+  }
+  @keyframes tuneLoadingPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+  @keyframes tuneLoadingHalo {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50%      { opacity: 0.9; transform: scale(1.15); }
+  }
+  .tune-loading-text {
+    margin-top: 28px;
+    font-size: 16px; font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    transition: opacity 0.25s;
+    min-height: 24px;
+  }
+  .tune-loading-text.fading { opacity: 0; }
+  .tune-loading-dots {
+    margin-top: 16px;
+    display: flex; gap: 8px;
+  }
+  .tune-loading-dots span {
+    width: 8px; height: 8px; border-radius: var(--r-full);
+    background: var(--primary);
+    animation: tuneLoadingDot 1.2s ease-in-out infinite;
+  }
+  .tune-loading-dots span:nth-child(2) { animation-delay: 0.18s; }
+  .tune-loading-dots span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes tuneLoadingDot {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+    40%           { opacity: 1;   transform: scale(1); }
+  }
+
+  /* ─── PROGRESS MODAL ─── */
+  .progress-modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 14, 27, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 110;
+  }
+  .progress-modal-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .progress-modal {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+    max-width: 390px; width: 100%;
+    height: 90vh; max-height: 720px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-medium);
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    z-index: 120;
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0.0, 1.0);
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .progress-modal.open { transform: translateX(-50%) translateY(0); }
+
+  .progress-modal-header {
+    padding: 16px 20px 12px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    border-bottom: 1px solid var(--border-default);
+    flex-shrink: 0;
+  }
+  .progress-modal-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+  .progress-modal-week {
+    font-size: 18px; font-weight: 800; letter-spacing: -0.3px;
+    color: var(--text-primary);
+  }
+  .progress-modal-close {
+    width: 36px; height: 36px; border-radius: var(--r-full);
+    background: var(--surface-card-inner);
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+  }
+  .progress-modal-close:hover { background: var(--surface-elevated); color: var(--text-primary); }
+  .progress-modal-close i { width: 18px; height: 18px; }
+
+  .progress-modal-body {
+    flex: 1; overflow-x: hidden; overflow-y: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: row;
+    overscroll-behavior: contain;
+  }
+  .progress-modal-body::-webkit-scrollbar { display: none; }
+
+  .progress-panel {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    padding: 20px 24px 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .progress-panel::-webkit-scrollbar { display: none; }
+
+  /* Panel sections — coloured by goal category */
+  .panel-mascot-wrap {
+    display: flex; justify-content: center;
+    padding: 8px 0 16px;
+    position: relative;
+  }
+  .panel-mascot-wrap::before {
+    content: ''; position: absolute; inset: 0 80px;
+    background: radial-gradient(circle, var(--cat), transparent 70%);
+    opacity: 0.15;
+    pointer-events: none;
+  }
+  .panel-mascot-wrap > * { position: relative; z-index: 1; }
+
+  .panel-title-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 4px;
+  }
+  .panel-title {
+    font-size: 24px; font-weight: 800; letter-spacing: -0.4px;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .panel-priority-pill {
+    padding: 4px 10px; border-radius: var(--r-full);
+    background: var(--cat); color: var(--bg-primary);
+    font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
+  }
+  .panel-stage-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 22px;
+  }
+  .panel-stage-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: var(--r-full);
+    background: var(--cat-bg);
+    border: 1px solid var(--cat);
+    color: var(--cat);
+    font-size: 11px; font-weight: 700;
+  }
+  .panel-stage-pill i { width: 12px; height: 12px; }
+  .panel-week-text {
+    font-size: 12px; color: var(--text-tertiary); font-weight: 600;
+  }
+
+  /* Primary metric block — big, hero numbers */
+  .panel-primary {
+    padding: 18px 18px 16px;
+    background: linear-gradient(135deg, var(--cat-bg), transparent 70%), var(--surface-card);
+    border: 1px solid var(--cat);
+    border-radius: var(--r-lg);
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel-primary::before {
+    content: ''; position: absolute; top: 0; right: 0; bottom: 0;
+    width: 80px;
+    background: radial-gradient(circle at right, var(--cat-bg), transparent 70%);
+    opacity: 0.6; pointer-events: none;
+  }
+  .panel-primary-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+  .panel-primary-value {
+    font-size: 36px; font-weight: 800; line-height: 1;
+    letter-spacing: -0.8px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .panel-primary-value .unit {
+    font-size: 16px; font-weight: 700; color: var(--text-tertiary);
+    letter-spacing: -0.2px;
+  }
+  .panel-primary-delta {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 700;
+    padding: 4px 9px; border-radius: var(--r-full);
+  }
+  .panel-primary-delta[data-dir="up"] {
+    background: rgba(46, 216, 163, 0.15);
+    color: var(--status-success);
+  }
+  .panel-primary-delta[data-dir="down"] {
+    background: rgba(250, 65, 105, 0.12);
+    color: var(--accent);
+  }
+  .panel-primary-delta[data-dir="flat"] {
+    background: rgba(140, 157, 255, 0.12);
+    color: var(--secondary);
+  }
+  .panel-primary-delta i { width: 12px; height: 12px; stroke-width: 2.5; }
+
+  /* Secondary metric block */
+  .panel-secondary {
+    padding: 14px 16px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .panel-secondary-text { min-width: 0; }
+  .panel-secondary-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+    color: var(--text-tertiary);
+    margin-bottom: 3px;
+  }
+  .panel-secondary-value {
+    font-size: 14px; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .panel-secondary-subtle {
+    font-size: 11px; color: var(--text-tertiary); font-weight: 500;
+  }
+
+  /* AI narration */
+  .panel-narration {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(71, 100, 255, 0.08), transparent 70%), var(--surface-card);
+    border: 1px solid var(--primary);
+    border-radius: var(--r-md);
+    margin-bottom: 16px;
+    display: flex; gap: 12px;
+  }
+  .panel-narration-icon {
+    width: 28px; height: 28px; border-radius: var(--r-sm);
+    background: rgba(71, 100, 255, 0.15); color: var(--primary);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel-narration-icon i { width: 14px; height: 14px; }
+  .panel-narration-text {
+    flex: 1;
+    font-size: 13px; line-height: 1.5; color: var(--text-secondary);
+  }
+  .panel-narration-text strong { color: var(--text-primary); }
+
+  /* Placeholder Tune affordance — visible but disabled */
+  .panel-tune-link {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    width: 100%; padding: 13px 14px;
+    background: var(--surface-card-inner);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--r-md);
+    color: var(--text-secondary);
+    font-family: var(--font);
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.12s;
+  }
+  .panel-tune-link:hover {
+    border-color: var(--cat);
+    color: var(--text-primary);
+    background: var(--surface-elevated);
+  }
+  .panel-tune-link:active { transform: scale(0.99); }
+  .panel-tune-link-inner { display: flex; align-items: center; gap: 8px; color: var(--cat); }
+  .panel-tune-link i { width: 16px; height: 16px; }
+
+  /* Footer — page dots + nav */
+  .progress-modal-footer {
+    padding: 12px 20px 20px;
+    border-top: 1px solid var(--border-default);
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    flex-shrink: 0;
+  }
+  .progress-modal-nav {
+    width: 44px; height: 44px; border-radius: var(--r-full);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, opacity 0.2s, transform 0.12s, border-color 0.2s;
+  }
+  .progress-modal-nav i { width: 22px; height: 22px; stroke-width: 2.4; }
+  .progress-modal-nav:disabled { opacity: 0.28; cursor: default; }
+  .progress-modal-nav:not(:disabled):hover {
+    background: var(--surface-card-inner);
+    border-color: var(--text-tertiary);
+    transform: scale(1.05);
+  }
+  .progress-modal-nav:not(:disabled):active { transform: scale(0.95); }
+
+  .progress-modal-dots {
+    display: flex; gap: 6px;
+  }
+  .progress-modal-dot {
+    width: 8px; height: 8px; border-radius: var(--r-full);
+    background: var(--border-medium);
+    transition: background 0.3s, width 0.3s;
+  }
+  .progress-modal-dot.active {
+    background: var(--text-primary);
+    width: 24px; border-radius: 4px;
+  }
+
+  /* Backdrop */
+  .backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 14, 27, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 99;
+  }
+  .backdrop.open { opacity: 1; pointer-events: auto; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 80px; left: 50%; transform: translate(-50%, -20px);
+    max-width: 340px;
+    padding: 11px 14px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--r-md);
+    color: var(--text-primary);
+    font-size: 13px; font-weight: 600; line-height: 1.4;
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 250;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast-icon {
+    width: 22px; height: 22px; border-radius: var(--r-full); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .toast-icon[data-tone="success"] { background: var(--status-success); color: var(--bg-primary); }
+  .toast-icon[data-tone="gentle"]  { background: #A855F7; color: var(--text-inverse); }
+  .toast-icon[data-tone="info"]    { background: var(--secondary); color: var(--bg-primary); }
+  .toast-icon i { width: 13px; height: 13px; stroke-width: 2.8; }
+</style>
+</head>
+<body>
+
+<div class="frame" id="app"></div>
+
+<!-- Skip sheet -->
+<div class="backdrop" id="backdrop"></div>
+<div class="skip-sheet" id="skip-sheet">
+  <div class="skip-sheet-handle"></div>
+  <div class="skip-sheet-mascot" id="skip-sheet-mascot"></div>
+  <h3 class="skip-sheet-title" id="skip-sheet-title">Skip this one?</h3>
+  <p class="skip-sheet-sub" id="skip-sheet-sub">No judgement. Pick what fits your day.</p>
+  <!-- Substitute option (only shown if the task has a lighter version) -->
+  <div id="skip-substitute-slot"></div>
+  <button class="skip-option" data-kind="today">
+    <div class="skip-option-icon"><i data-lucide="moon"></i></div>
+    <div class="skip-option-text">
+      <div class="skip-option-name">Skip for today</div>
+      <div class="skip-option-desc">Just today. Tomorrow's a fresh start.</div>
+    </div>
+  </button>
+  <button class="skip-option" data-kind="indef">
+    <div class="skip-option-icon"><i data-lucide="circle-off"></i></div>
+    <div class="skip-option-text">
+      <div class="skip-option-name">Stop suggesting this</div>
+      <div class="skip-option-desc">I'll remove this from your routine.</div>
+    </div>
+  </button>
+  <button class="skip-sheet-cancel" id="skip-cancel">Cancel</button>
+</div>
+
+<!-- Progress modal — full-screen sheet -->
+<div class="progress-modal-backdrop" id="progress-modal-backdrop"></div>
+<div class="progress-modal" id="progress-modal">
+  <div class="progress-modal-header">
+    <div class="progress-modal-title">
+      <div class="progress-modal-eyebrow">Progress</div>
+      <div class="progress-modal-week" id="progress-modal-week">Week 4 · May 2026</div>
+    </div>
+    <button class="progress-modal-close" id="progress-modal-close" aria-label="Close progress view">
+      <i data-lucide="x"></i>
+    </button>
+  </div>
+  <div class="progress-modal-body" id="progress-modal-body"></div>
+  <div class="progress-modal-footer" id="progress-modal-footer"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toast-icon"></div>
+  <div id="toast-text"></div>
+</div>
+
+<!-- Tune goal sheet -->
+<div class="tune-backdrop" id="tune-backdrop"></div>
+<div class="tune-sheet" id="tune-sheet">
+  <div class="tune-sheet-handle"></div>
+  <div class="tune-sheet-header">
+    <div class="tune-sheet-eyebrow" id="tune-sheet-eyebrow">Tune your goal</div>
+    <div class="tune-sheet-title" id="tune-sheet-title">Build Endurance</div>
+  </div>
+  <div class="tune-sheet-body" id="tune-sheet-body">
+    <!-- Slider rows injected here -->
+  </div>
+  <div class="tune-warning">
+    <div class="tune-warning-icon"><i data-lucide="alert-triangle"></i></div>
+    <div class="tune-warning-text"><strong>This will reshape your routine.</strong> Tomorrow looks different.</div>
+  </div>
+  <div class="tune-sheet-footer">
+    <button class="tune-cancel" id="tune-cancel">Cancel</button>
+    <button class="tune-apply" id="tune-apply">
+      <i data-lucide="check"></i>
+      Apply changes
+    </button>
+  </div>
+</div>
+
+<!-- Tune apply loading overlay -->
+<div class="tune-loading" id="tune-loading">
+  <div class="tune-loading-mascot" id="tune-loading-mascot"></div>
+  <div class="tune-loading-text" id="tune-loading-text">Listening to your week…</div>
+  <div class="tune-loading-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- Completion overlay -->
+<div class="completion-overlay" id="completion-overlay">
+  <div class="completion-mascot" id="completion-mascot"></div>
+  <div class="completion-message" id="completion-message"></div>
+  <div class="completion-sub" id="completion-sub"></div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────
+const GOALS = [
+  { id: 1,  name: "Build Endurance",     cat: "physical",  icon: "activity",         desc: "Progressive cardio with built-in recovery." },
+  { id: 2,  name: "Lose Weight",         cat: "physical",  icon: "trending-down",    desc: "Sustainable deficit through movement and meals." },
+  { id: 3,  name: "Sleep Better",        cat: "mental",    icon: "moon",             desc: "Sleep hygiene and wind-down routines." },
+  { id: 4,  name: "Build Strength",      cat: "physical",  icon: "dumbbell",         desc: "Structured resistance work, no guesswork." },
+  { id: 5,  name: "Reduce Stress",       cat: "mental",    icon: "wind",             desc: "Mindfulness and breathwork, daily." },
+  { id: 6,  name: "Eat Healthier",       cat: "nutrition", icon: "apple",            desc: "Build consistent eating habits, not diets." },
+  { id: 7,  name: "Improve Flexibility", cat: "physical",  icon: "move",             desc: "Daily mobility and stretching work." },
+  { id: 8,  name: "Boost Energy",        cat: "mental",    icon: "battery-charging", desc: "Stabilise energy through diet and movement." },
+  { id: 9,  name: "Better Focus",        cat: "mental",    icon: "target",           desc: "Attention training and deep-work rituals." },
+  { id: 10, name: "Manage Pain",         cat: "medical",   icon: "heart-pulse",      desc: "Gentle movement and recovery protocols." },
+  { id: 11, name: "Gut Health",          cat: "nutrition", icon: "leaf",             desc: "Fibre, fermentation, and meal timing." },
+  { id: 12, name: "Build Consistency",   cat: "mental",    icon: "calendar-check",   desc: "Habit stacking and daily anchors." },
+];
+const CONDITIONS = [
+  { id: "t2d",    name: "Type 2 Diabetes",      icon: "droplet",     sub: "Glucose-aware meal timing & post-meal walks" },
+  { id: "ra",     name: "Rheumatoid Arthritis", icon: "bone",        sub: "Low-impact mobility, joint protection" },
+  { id: "htn",    name: "Hypertension",         icon: "heart",       sub: "Zone 2 cardio, sodium-aware nutrition" },
+  { id: "asthma", name: "Asthma",               icon: "wind",        sub: "Breathwork, trigger-aware pacing" },
+  { id: "oa",     name: "Osteoarthritis",       icon: "bone",        sub: "Low-impact strength, flexibility focus" },
+  { id: "copd",   name: "COPD",                 icon: "wind",        sub: "Pulmonary cues, paced energy across the day" },
+  { id: "ms",     name: "Multiple Sclerosis",   icon: "brain",       sub: "Fatigue management, balance training" },
+  { id: "lupus",  name: "Lupus (SLE)",          icon: "shield-alert",sub: "Flare-up monitoring, gentler intensity floors" },
+  { id: "other",  name: "Other",                icon: "plus",        sub: "Tell us what you manage" },
+  { id: "none",   name: "No chronic condition", icon: "check-circle",sub: "Routine runs purely on your goals" },
+];
+const MODIFIERS = {
+  t2d:    { impact: "Adds glucose-aware meal timing, caps intensity on empty stomach, and inserts post-meal walks.", pillar: "Nutrition +2 · Fitness +1" },
+  ra:     { impact: "Swaps high-impact cardio for mobility, adds anti-inflammatory meals, protects joints.", pillar: "Mobility +2 · Medical +1" },
+  htn:    { impact: "Emphasises Zone 2 cardio, adds sodium-aware nutrition, inserts BP check-ins.", pillar: "Cardio +1 · Medical +1" },
+  asthma: { impact: "Adds breathwork, reduces cold-air exposure cues, paces cardio around triggers.", pillar: "Breathwork +1 · Cardio ±0" },
+  oa:     { impact: "Shifts to low-impact strength, adds flexibility focus, reduces repetitive load.", pillar: "Mobility +1 · Strength +1" },
+  copd:   { impact: "Adds pulmonary rehab cues, reduces exertion ceiling, paces energy across the day.", pillar: "Medical +2 · Cardio -1" },
+  ms:     { impact: "Adds fatigue management, balance training, and caps session length.", pillar: "Mental +1 · Medical +1" },
+  lupus:  { impact: "Reduces UV exposure cues, adds flare-up monitoring, softens intensity floors.", pillar: "Medical +2 · Mental +1" },
+  other:  { impact: "We'll review what you typed and adapt the routine accordingly.", pillar: "Custom adjustment" },
+  none:   { impact: "Routine runs purely on your goals — no medical constraints applied.", pillar: "All goals at full weight" },
+};
+const INTENSITY_LEVELS = [
+  { name: "Light",       desc: "Short, low-effort sessions. Build a base without strain.",          time: "~30–60 min/wk"   },
+  { name: "Moderate",    desc: "An easy daily commitment. A noticeable but comfortable push.",     time: "~90–120 min/wk"  },
+  { name: "Standard",    desc: "Balanced effort. Real progress without overdoing it.",             time: "~150–180 min/wk" },
+  { name: "Challenging", desc: "You'll feel it. Faster results, more discipline required.",        time: "~200–260 min/wk" },
+  { name: "Intense",     desc: "Demanding. Built for people ready to grind.",                      time: "~280–360 min/wk" },
+];
+const TONES = [
+  { id: "gentle",      name: "Light Coach",          desc: "Warm encouragement. Celebrates small wins.",                            mood: "curious",
+    samples: [
+      "You can do this. One step at a time.",
+      "Tiny win — that counts.",
+      "Showing up is half the work. Proud of you.",
+      "Hard day? Pick the smallest thing. That's enough."
+    ]
+  },
+  { id: "balanced",    name: "Balanced Coach",       desc: "Honest but kind. Tells you when to push and when to rest.",            mood: "encouraging",
+    samples: [
+      "Solid effort today.",
+      "You skipped two — what got in the way?",
+      "Push or pull back? Your call. I'd lean push.",
+      "Three good days. One off day. Net positive."
+    ]
+  },
+  { id: "accountable", name: "Accountability Coach", desc: "Direct and challenging. Calls you out when you slip.",                 mood: "proud",
+    samples: [
+      "Don't talk yourself out of this.",
+      "Three skips this week. Course-correct.",
+      "You said you'd do this. Do it.",
+      "Discipline beats motivation. Move."
+    ]
+  },
+];
+
+// ── VOICE REGISTRY — tone-keyed user-facing copy ────────────────────────
+// Each event has 3 variants keyed by tone id (gentle | balanced | accountable).
+// Some entries are functions of context. The voice() helper resolves them
+// against the currently selected state.tone, falling back to balanced when
+// no tone is picked yet.
+const VOICE = {
+  // ── Completion overlay (after marking a task done) ──────────────────
+  // ctx: { isLast: bool, done: int, active: int, taskName: string }
+  completionTitle: {
+    gentle:      ctx => ctx.isLast ? "Lovely work."         : "Excellent.",
+    balanced:    ctx => ctx.isLast ? "That's a wrap."       : "Well done.",
+    accountable: ctx => ctx.isLast ? "Full day. Good."      : "Good. Next.",
+  },
+  completionSub: {
+    gentle:      ctx => ctx.isLast
+                  ? "Proud of you. Real care today."
+                  : `${ctx.done} done — you're doing brilliantly.`,
+    balanced:    ctx => ctx.isLast
+                  ? "Full day. Real work."
+                  : `${ctx.done} of ${ctx.active} done. ${ctx.active - ctx.done} when you're ready.`,
+    accountable: ctx => ctx.isLast
+                  ? "That's the standard. Hold it tomorrow."
+                  : `${ctx.done}/${ctx.active}. Don't stop now.`,
+  },
+
+  // ── Toast after Mark Done (short, non-overlay) ──────────────────────
+  // ctx: { remaining: int, taskName: string }
+  doneToast: {
+    gentle:      ctx => ctx.remaining > 0
+                  ? `Wonderful. ${ctx.remaining} more when you're ready — no rush.`
+                  : `That's everything. You showed up today.`,
+    balanced:    ctx => ctx.remaining > 0
+                  ? `Got it. ${ctx.remaining} left when you're ready.`
+                  : `That's the lot. Real day.`,
+    accountable: ctx => ctx.remaining > 0
+                  ? `Logged. ${ctx.remaining} more. Keep moving.`
+                  : `Done. That's the bar.`,
+  },
+
+  // ── Skip for today ──────────────────────────────────────────────────
+  skipTodayToast: {
+    gentle:      () => "All good. Save it for tomorrow, no pressure.",
+    balanced:    () => "Saving your energy. Tomorrow's a fresh page.",
+    accountable: () => "Noted. That's one. Don't make it three.",
+  },
+
+  // ── Stop suggesting (indefinite skip) ───────────────────────────────
+  // ctx: { taskName: string }
+  skipIndefToast: {
+    gentle:      ctx => `Of course. I'll stop suggesting "${ctx.taskName}".`,
+    balanced:    ctx => `Got it. I'll stop suggesting "${ctx.taskName}".`,
+    accountable: ctx => `Removed. "${ctx.taskName}" is off your routine.`,
+  },
+
+  // ── Skip sheet title + sub (when the sheet first opens) ─────────────
+  skipSheetTitle: {
+    gentle:      () => "No worries — skip?",
+    balanced:    () => "Skip this one?",
+    accountable: () => "Sure you want to skip?",
+  },
+  skipSheetSub: {
+    gentle:      () => "Life happens. Pick what fits — no judgement.",
+    balanced:    () => "No judgement. Pick what fits your day.",
+    accountable: () => "Pick fast. Don't overthink it.",
+  },
+
+  // ── Mascot mood messages on the progress card ──────────────────────
+  // ctx: { done, skipped, active, hour, consecutiveSkipDays }
+  // Returns { mood, message } — mood drives the mascot, message is the bold copy
+  moodMessage: {
+    // Light Coach — warmer, more reassuring, never demanding
+    gentle: ctx => {
+      if (ctx.done >= ctx.active && ctx.active > 0) return ctx.hour >= 17
+        ? { mood: "proud",       message: `<strong>What a day.</strong> So proud of you.` }
+        : { mood: "happy",       message: `<strong>That's everything.</strong> Lovely work.` };
+      if (ctx.consecutiveSkipDays >= 3)               return { mood: "gentle",      message: `<strong>Heavy stretch?</strong> Let's make it easier.` };
+      if (ctx.hour < 8 && ctx.done === 0)             return { mood: "curious",     message: `<strong>Soft morning.</strong> The day's yours.` };
+      if (ctx.hour < 8)                               return { mood: "encouraging", message: `<strong>${ctx.done} already.</strong> What a start!` };
+      if (ctx.hour < 12 && ctx.done === 0 && ctx.skipped === 0) return { mood: "curious",     message: `<strong>Fresh day.</strong> No rush at all.` };
+      if (ctx.hour < 12 && ctx.done > 0)              return { mood: "encouraging", message: `<strong>${ctx.done} done.</strong> Wonderful start.` };
+      if (ctx.hour < 12)                              return { mood: "gentle",      message: `<strong>Quiet morning.</strong> Tiny win counts.` };
+      if (ctx.hour < 17 && ctx.done === 0 && ctx.skipped === 0) return { mood: "curious",     message: `<strong>Plenty of time.</strong> Pick anything small.` };
+      if (ctx.hour < 17 && ctx.done >= 3)             return { mood: "encouraging", message: `<strong>${ctx.done} done!</strong> You're amazing.` };
+      if (ctx.hour < 17 && ctx.done > 0)              return { mood: "encouraging", message: `<strong>${ctx.done} in.</strong> Lovely momentum.` };
+      if (ctx.hour < 17 && ctx.skipped > 0)           return { mood: "gentle",      message: `<strong>Real day.</strong> Anything is enough.` };
+      if (ctx.hour < 17)                              return { mood: "curious",     message: `<strong>Easy does it.</strong> One thing at a time.` };
+      if (ctx.done === 0 && ctx.skipped === 0)        return { mood: "resting",     message: `<strong>Evening already.</strong> A tiny one, maybe?` };
+      if (ctx.done === 0)                             return { mood: "resting",     message: `<strong>Rest counts too.</strong> Tomorrow's fresh.` };
+      if (ctx.done >= 3)                              return { mood: "encouraging", message: `<strong>${ctx.done} done.</strong> Beautiful day.` };
+      if (ctx.done > 0)                               return { mood: "gentle",      message: `<strong>${ctx.done} counts.</strong> You showed up.` };
+      return                                                  { mood: "resting",     message: `<strong>Gentle ending.</strong> Tomorrow's a fresh page.` };
+    },
+    // Balanced Coach — honest, plain-spoken (this is the original copy)
+    balanced: ctx => {
+      if (ctx.done >= ctx.active && ctx.active > 0) return ctx.hour >= 17
+        ? { mood: "proud",       message: `<strong>Full day.</strong> Really good work.` }
+        : { mood: "happy",       message: `<strong>That's a wrap.</strong> Proud of you.` };
+      if (ctx.consecutiveSkipDays >= 3)               return { mood: "gentle",      message: `<strong>Heavy stretch?</strong> Want to ease the load?` };
+      if (ctx.hour < 8 && ctx.done === 0)             return { mood: "curious",     message: `<strong>Early start.</strong> Day's ahead of you.` };
+      if (ctx.hour < 8)                               return { mood: "encouraging", message: `<strong>${ctx.done} already.</strong> Strong start.` };
+      if (ctx.hour < 12 && ctx.done === 0 && ctx.skipped === 0) return { mood: "curious",     message: `<strong>Fresh day.</strong> What feels possible?` };
+      if (ctx.hour < 12 && ctx.done > 0)              return { mood: "encouraging", message: `<strong>${ctx.done} in.</strong> Nice rhythm.` };
+      if (ctx.hour < 12)                              return { mood: "gentle",      message: `<strong>Quiet start.</strong> Pick what fits.` };
+      if (ctx.hour < 17 && ctx.done === 0 && ctx.skipped === 0) return { mood: "curious",     message: `<strong>Mid-day.</strong> Easy one to start?` };
+      if (ctx.hour < 17 && ctx.done >= 3)             return { mood: "encouraging", message: `<strong>${ctx.done} done.</strong> You're flying.` };
+      if (ctx.hour < 17 && ctx.done > 0)              return { mood: "encouraging", message: `<strong>${ctx.done} in.</strong> Keep going.` };
+      if (ctx.hour < 17 && ctx.skipped > 0)           return { mood: "gentle",      message: `<strong>Real day.</strong> Anything counts.` };
+      if (ctx.hour < 17)                              return { mood: "curious",     message: `<strong>Mid-day.</strong> Pick what feels light.` };
+      if (ctx.done === 0 && ctx.skipped === 0)        return { mood: "resting",     message: `<strong>Evening already.</strong> Want one easy thing?` };
+      if (ctx.done === 0)                             return { mood: "resting",     message: `<strong>Not every day is for doing.</strong> Rest counts.` };
+      if (ctx.done >= 3)                              return { mood: "encouraging", message: `<strong>${ctx.done} in.</strong> Solid day.` };
+      if (ctx.done > 0)                               return { mood: "gentle",      message: `<strong>${ctx.done} counts.</strong> Done is done.` };
+      return                                                  { mood: "resting",     message: `<strong>Soft landing.</strong> Tomorrow's a fresh page.` };
+    },
+    // Accountability Coach — direct, demanding, never insulting
+    accountable: ctx => {
+      if (ctx.done >= ctx.active && ctx.active > 0) return ctx.hour >= 17
+        ? { mood: "proud",       message: `<strong>Full day. Good.</strong> Hold the bar tomorrow.` }
+        : { mood: "happy",       message: `<strong>Cleared the list.</strong> Don't get comfortable.` };
+      if (ctx.consecutiveSkipDays >= 3)               return { mood: "gentle",      message: `<strong>Three days slipping.</strong> Time to course-correct.` };
+      if (ctx.hour < 8 && ctx.done === 0)             return { mood: "curious",     message: `<strong>Early. Good.</strong> Knock one out before breakfast.` };
+      if (ctx.hour < 8)                               return { mood: "encouraging", message: `<strong>${ctx.done} done already.</strong> That's the standard.` };
+      if (ctx.hour < 12 && ctx.done === 0 && ctx.skipped === 0) return { mood: "curious",     message: `<strong>Day's started.</strong> What are you waiting for?` };
+      if (ctx.hour < 12 && ctx.done > 0)              return { mood: "encouraging", message: `<strong>${ctx.done} in.</strong> Don't lose momentum.` };
+      if (ctx.hour < 12)                              return { mood: "gentle",      message: `<strong>Still zero.</strong> Pick the easy one and start.` };
+      if (ctx.hour < 17 && ctx.done === 0 && ctx.skipped === 0) return { mood: "curious",     message: `<strong>Half the day gone.</strong> Move.` };
+      if (ctx.hour < 17 && ctx.done >= 3)             return { mood: "encouraging", message: `<strong>${ctx.done} done.</strong> Now finish strong.` };
+      if (ctx.hour < 17 && ctx.done > 0)              return { mood: "encouraging", message: `<strong>${ctx.done} in.</strong> More.` };
+      if (ctx.hour < 17 && ctx.skipped > 0)           return { mood: "gentle",      message: `<strong>Skipping isn't winning.</strong> Pick one and do it.` };
+      if (ctx.hour < 17)                              return { mood: "curious",     message: `<strong>Day's getting away.</strong> Start anywhere.` };
+      if (ctx.done === 0 && ctx.skipped === 0)        return { mood: "resting",     message: `<strong>Whole day, zero done.</strong> One before bed?` };
+      if (ctx.done === 0)                             return { mood: "resting",     message: `<strong>Zero done.</strong> Tomorrow you start earlier.` };
+      if (ctx.done >= 3)                              return { mood: "encouraging", message: `<strong>${ctx.done} in.</strong> That's a real day.` };
+      if (ctx.done > 0)                               return { mood: "gentle",      message: `<strong>${ctx.done} done.</strong> Could've been more.` };
+      return                                                  { mood: "resting",     message: `<strong>Day's done.</strong> Tomorrow, be earlier.` };
+    },
+  },
+
+  // ── Per-goal AI narration inside the progress modal ─────────────────
+  goalNarration: {
+    1: { // Build Endurance
+      gentle:      "You've added 10 whole minutes to your sessions — that's such a beautiful jump. No rush, keep this lovely pace.",
+      balanced:    "We've extended your sessions from 15 to 25 minutes. You're holding the pace well — ready for more.",
+      accountable: "Sessions up 67% in 4 weeks. You're ready to push harder. Time to add intervals.",
+    },
+    3: { // Sleep Better
+      gentle:      "Your wind-down is really working — sleep is up 38 minutes. So proud of how you've protected this.",
+      balanced:    "Your wind-down routine is sticking. Less screen-time in the evening seems to be the main driver.",
+      accountable: "Sleep up 38 min. Now lock it in — same wind-down, every night, no exceptions.",
+    },
+    4: { // Build Strength
+      gentle:      "Look at that — your lifts are up 4kg! Wonderful progress. Keep listening to your body.",
+      balanced:    "Bench is moving. Time to add a third set on overhead press.",
+      accountable: "+4kg across 3 lifts. Add a third set OHP this week. No skipping.",
+    },
+    5: { // Reduce Stress
+      gentle:      "Your evening practice is the strongest piece — that's so lovely to see. We'll gently add a midday moment.",
+      balanced:    "Your evening practice is the strongest piece. We'll add a midday reset next week.",
+      accountable: "Evening is locked in. Now add midday. Two practices beats one.",
+    },
+    6: { // Eat Healthier
+      gentle:      "Dinners are tricky — no shame in that. Want a gentle reminder to help?",
+      balanced:    "Dinners are slipping. Want to set a reminder for evening meals?",
+      accountable: "Dinners: 60% logged. Set the reminder. Stop guessing.",
+    },
+  },
+};
+
+// Resolve a voice entry against current state.tone, with optional context
+function voice(key, ctx = {}) {
+  const tone = state.tone || "balanced";
+  const entry = VOICE[key];
+  if (!entry) return "";
+  const v = entry[tone] || entry.balanced;
+  return typeof v === "function" ? v(ctx) : v;
+}
+
+// Goal narration — tone-keyed, falls back to the GOAL_PROGRESS default
+function goalNarration(goalId) {
+  const tone = state.tone || "balanced";
+  const entry = VOICE.goalNarration[goalId];
+  if (entry && entry[tone]) return entry[tone];
+  const data = GOAL_PROGRESS[goalId] || GOAL_PROGRESS._default;
+  return data.narration;
+}
+
+// Per-goal progress data for the progress modal. In production these are
+// derived from logged task data; here they're plausible seeded values for
+// testing the design.
+const GOAL_PROGRESS = {
+  1:  { // Build Endurance
+    stage: "Builder",         // Base / Builder / Performance / Maintenance
+    week: 4,                  // weeks into this goal
+    trend: "strong",          // strong / steady / soft
+    primary: { label: "Zone 2 time this week", value: "47", unit: "min", delta: "+25 min vs last week", deltaDir: "up" },
+    secondary: { label: "Cardio sessions", value: "7 of 9 scheduled", subtle: "78% completion" },
+    narration: "We've extended your sessions from 15 to 25 minutes. You're holding the pace well — ready for more."
+  },
+  3:  { // Sleep Better
+    stage: "Building habits",
+    week: 4,
+    trend: "steady",
+    primary: { label: "Avg sleep", value: "7h 24m", unit: "", delta: "+38 min vs week 1", deltaDir: "up" },
+    secondary: { label: "Wake-ups", value: "1.2 per night", subtle: "down from 2.3" },
+    narration: "Your wind-down routine is sticking. Less screen-time in the evening seems to be the main driver."
+  },
+  4:  { // Build Strength
+    stage: "Linear progression",
+    week: 4,
+    trend: "strong",
+    primary: { label: "Working load", value: "+4kg", unit: "", delta: "Across 3 main lifts", deltaDir: "up" },
+    secondary: { label: "Sets completed", value: "12 of 12", subtle: "Perfect week" },
+    narration: "Bench is moving. Time to add a third set on overhead press."
+  },
+  5:  { // Reduce Stress
+    stage: "Daily practice",
+    week: 4,
+    trend: "steady",
+    primary: { label: "Breathwork", value: "38", unit: "min/wk", delta: "+16 min vs last week", deltaDir: "up" },
+    secondary: { label: "Stress check-ins", value: "5 of 7", subtle: "Down trend in evening tension" },
+    narration: "Your evening practice is the strongest piece. We'll add a midday reset next week."
+  },
+  6:  { // Eat Healthier
+    stage: "Tracking phase",
+    week: 4,
+    trend: "soft",
+    primary: { label: "Meals logged", value: "16 of 21", unit: "", delta: "Lunches are your strongest", deltaDir: "flat" },
+    secondary: { label: "Protein avg", value: "78g/day", subtle: "Target is 100g" },
+    narration: "Dinners are slipping. Want to set a reminder for evening meals?"
+  },
+  // Fallback for goals without explicit data
+  _default: {
+    stage: "Getting started",
+    week: 1,
+    trend: "steady",
+    primary: { label: "Days into this goal", value: "—", unit: "", delta: "Just getting started", deltaDir: "flat" },
+    secondary: { label: "Routine tasks", value: "this week", subtle: "Logging will start showing trends in week 2" },
+    narration: "Early days. We're learning your patterns — real trends appear after about 2 weeks."
+  }
+};
+// Trend → mascot mood + accent intensity
+const TREND_MOOD = { strong: "proud", steady: "encouraging", soft: "gentle" };
+
+// Tasks for the routine screen + their detail-view kind
+const TASKS = [
+  { id: 1, name: "Sleep Quality Review", cat: "mental",    period: "morning",   time: "09:00", kind: "complex", detail: "sleep",    meta: "~3 min · journal-style log", icon: "brain" },
+  { id: 2, name: "Take Creatine 5g",     cat: "nutrition", period: "morning",   time: "09:30", kind: "simple",  detail: null,       meta: "Quick log",                  icon: "pill",
+    substitute: { label: "Half dose · 2.5g", summary: "Smaller dose still counts toward your loading week." } },
+  { id: 3, name: "Lunch",                cat: "nutrition", period: "afternoon", time: "13:00", kind: "complex", detail: "meal",     meta: "Log macros & portion",       icon: "apple",
+    substitute: { label: "Lighter lunch", summary: "A smaller plate — protein + greens, skip the rest." } },
+  { id: 4, name: "Walk · 20 min",        cat: "physical",  period: "afternoon", time: "15:30", kind: "simple",  detail: null,       meta: "Zone 2 cardio",              icon: "footprints",
+    substitute: { label: "Short walk · 10 min", summary: "Half the time, gentle pace. Movement still counts." } },
+  { id: 5, name: "Strength · Upper",     cat: "physical",  period: "evening",   time: "17:30", kind: "complex", detail: "strength", meta: "Log sets · reps · load",     icon: "dumbbell",
+    substitute: { label: "Mobility flow · 15 min", summary: "No load. Joints + range of motion. Recovery-focused." } },
+];
+
+const PERIOD_ICON = { morning: "sun", afternoon: "coffee", evening: "moon" };
+const CAT_VARS = {
+  physical:  { color: "var(--cat-physical)",  bg: "var(--cat-physical-bg)",  glow: "var(--cat-physical-glow)" },
+  nutrition: { color: "var(--cat-nutrition)", bg: "var(--cat-nutrition-bg)", glow: "var(--cat-nutrition-glow)" },
+  mental:    { color: "var(--cat-mental)",    bg: "var(--cat-mental-bg)",    glow: "var(--cat-mental-glow)" },
+  medical:   { color: "var(--cat-medical)",   bg: "var(--cat-medical-bg)",   glow: "rgba(250, 65, 105, 0.18)" },
+};
+
+const MAX_GOALS = 3;
+const MAX_CONDITIONS = 2;
+const STEPPED = ["goals", "conditions", "intensity", "tone"];
+
+// ── STATE ───────────────────────────────────────────────────────────────
+const state = {
+  screen: "welcome",
+  taskVariant: "A",     // A = actions below header, B = actions replace header
+  goals: [],
+  conditions: [],
+  customCondition: "",
+  conditionSearch: "",
+  intensity: 2,
+  tone: null,
+  // Routine state
+  hour: 9,
+  tasks: TASKS.map(t => ({ ...t, status: "pending" })),
+  expandedId: null,
+  skipTargetId: null,
+  consecutiveSkipDays: 0,
+  // Progress modal
+  progressModalOpen: false,
+  progressPanelIdx: 0,    // which goal panel is showing (0..goals.length-1)
+  // Detail state
+  detailTaskId: null,
+  detail: {
+    sleep:    { hours: 7, quality: 3, note: "" },
+    meal:     { description: "", portion: null, notes: "" },
+    strength: {
+      exercises: [
+        { name: "Bench Press",       sets: [{reps: "", weight: ""}, {reps: "", weight: ""}, {reps: "", weight: ""}] },
+        { name: "Overhead Press",    sets: [{reps: "", weight: ""}, {reps: "", weight: ""}, {reps: "", weight: ""}] },
+        { name: "Rows",              sets: [{reps: "", weight: ""}, {reps: "", weight: ""}, {reps: "", weight: ""}] },
+      ]
+    }
+  }
+};
+
+// ── MASCOT ──────────────────────────────────────────────────────────────
+// ── MASCOT IMAGE MAP ─────────────────────────────────────────────────────
+// Drop PNGs into the mascots/ folder named by mood.
+// Fallback: if a mood-specific file is missing, uses mascots/default.png
+const MASCOT_IMGS = {
+  // Active moods
+  curious:     'mascots/curious.png',
+  encouraging: 'mascots/encouraging.png',
+  gentle:      'mascots/Anxious.png',
+  resting:     'mascots/resting.png',
+  happy:       'mascots/happy.png',
+  proud:       'mascots/proud.png',
+  // Extras — available for future use
+  anxious:     'mascots/Anxious.png',
+  frustrated:  'mascots/Frustrated.png',
+  overwhelmed: 'mascots/Overwhelmed.png',
+  uneasy:      'mascots/Uneasy.png',
+  tujen:       'mascots/tujen.png',
+};
+
+function mascot({ size = 100, mood = "curious", animate = true }) {
+  const src = MASCOT_IMGS[mood] || 'mascots/default.png';
+  const animStyle = animate ? 'animation: mascotBob 3.4s ease-in-out infinite;' : '';
+  return `<img
+    src="${src}"
+    width="${size}" height="${size}"
+    style="object-fit: contain; display: block; ${animStyle}"
+    alt="${mood} mascot"
+  />`;
+}
+const mascotKf = document.createElement("style");
+mascotKf.textContent = `
+  @keyframes mascotBob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(-1deg); } }
+  /* Mood swap cross-fade */
+  @keyframes mascotFadeOut {
+    0%   { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.88); }
+  }
+  @keyframes mascotFadeIn {
+    0%   { opacity: 0; transform: scale(0.85); }
+    60%  { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes mascotCelebrate {
+    0%   { transform: translateY(0) rotate(0); }
+    30%  { transform: translateY(-10px) rotate(-3deg); }
+    55%  { transform: translateY(2px)  rotate(2deg); }
+    80%  { transform: translateY(-3px) rotate(-1deg); }
+    100% { transform: translateY(0) rotate(0); }
+  }
+  .mascot-swap-out { animation: mascotFadeOut 0.22s ease-in forwards !important; }
+  .mascot-swap-in  { animation: mascotFadeIn 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important; }
+  .mascot-celebrate {
+    /* Wraps the bob animation: do celebrate first, then resume bob */
+    animation: mascotCelebrate 0.7s ease-out, mascotBob 3.4s ease-in-out 0.7s infinite !important;
+  }
+`;
+document.head.appendChild(mascotKf);
+
+// Animated mood transition. Replaces the inner SVG of a host element with
+// a fade-out → fade-in sequence so the user sees the mood change land.
+// celebrate=true plays a one-time bob-up on the new mascot.
+function swapMascot(hostEl, newMood, opts = {}) {
+  if (!hostEl) return;
+  const { size = 100, celebrate = false, animate = true } = opts;
+  const old = hostEl.firstElementChild;
+  if (!old) {
+    hostEl.innerHTML = mascot({ size, mood: newMood, animate });
+    return;
+  }
+  // Fade out the current mascot
+  old.classList.add("mascot-swap-out");
+  setTimeout(() => {
+    hostEl.innerHTML = mascot({ size, mood: newMood, animate: false });
+    const fresh = hostEl.firstElementChild;
+    if (fresh) {
+      fresh.classList.add("mascot-swap-in");
+      if (celebrate) fresh.classList.add("mascot-celebrate");
+      // After the in-animation completes, restore the standard bob loop
+      setTimeout(() => {
+        fresh.classList.remove("mascot-swap-in");
+        if (!celebrate) {
+          fresh.style.animation = animate ? "mascotBob 3.4s ease-in-out infinite" : "";
+        }
+      }, celebrate ? 720 : 460);
+    }
+  }, 230);
+}
+
+// ── HELPERS ─────────────────────────────────────────────────────────────
+const lucide = name => `<i data-lucide="${name}"></i>`;
+function refreshIcons() { if (window.lucide && window.lucide.createIcons) window.lucide.createIcons(); }
+
+const statusBar = () => '';
+
+const stepper = (current) => {
+  const idx = STEPPED.indexOf(current);
+  if (idx === -1) return "";
+  return `<div class="stepper">${STEPPED.map((_, i) => `<div class="stepper-seg ${i < idx ? 'done' : i === idx ? 'active' : ''}"></div>`).join("")}</div>`;
+};
+
+const backBtn = (target) => `<button class="back-btn" data-action="back-to-${target}" aria-label="Back">${lucide("arrow-left")}</button>`;
+
+// ── RENDER ROUTING ──────────────────────────────────────────────────────
+function render() {
+  if (typeof stopTonePreviewRotation === "function") stopTonePreviewRotation();
+
+  // Remove any CTAs previously portalled to body
+  document.querySelectorAll('body > .cta-wrap, body > .detail-cta-wrap').forEach(n => n.remove());
+
+  const el = document.getElementById("app");
+  el.innerHTML = renderScreen();
+
+  // Portal .cta-wrap / .detail-cta-wrap to <body> so iOS Safari
+  // position:fixed works correctly (overflow-x:hidden on body breaks it)
+  el.querySelectorAll('.cta-wrap, .detail-cta-wrap').forEach(cta => {
+    document.body.appendChild(cta);
+  });
+
+  refreshIcons();
+  window.scrollTo({ top: 0, behavior: "instant" });
+
+  const slider = document.getElementById("slider-rail");
+  if (slider) initSlider();
+
+  if (state.screen === "tone" && state.tone && typeof startTonePreviewRotation === "function") {
+    startTonePreviewRotation();
+  }
+}
+
+function renderScreen() {
+  switch (state.screen) {
+    case "welcome":    return renderWelcome();
+    case "goals":      return renderGoals();
+    case "conditions": return renderConditions();
+    case "intensity":  return renderIntensity();
+    case "tone":       return renderTone();
+    case "handoff":    return renderHandoff();
+    case "routine":    return renderRoutine();
+    case "detail":     return renderDetail();
+    default: return renderWelcome();
+  }
+}
+
+// ── WELCOME ─────────────────────────────────────────────────────────────
+function renderWelcome() {
+  return `
+    ${statusBar()}
+    <div class="welcome">
+      <div class="welcome-mascot-wrap">${mascot({ size: 130, mood: "curious" })}</div>
+      <h1 class="welcome-title">A routine that<br/>adapts to <em>you</em>.</h1>
+      <p class="welcome-sub">Tell us your goals and how you live — we'll build a daily routine that bends around what makes you, you.</p>
+      <div class="welcome-features">
+        <div class="welcome-feature">
+          <div class="welcome-feature-icon" style="background: rgba(46, 216, 163, 0.12); color: var(--status-success);">${lucide("sparkles")}</div>
+          <div class="welcome-feature-text"><strong>Goal-led, not condition-led.</strong> Your aspirations stay primary.</div>
+        </div>
+        <div class="welcome-feature">
+          <div class="welcome-feature-icon" style="background: rgba(71, 100, 255, 0.12); color: var(--primary);">${lucide("zap")}</div>
+          <div class="welcome-feature-text"><strong>4 quick questions.</strong> We'll have your routine in under 2 minutes.</div>
+        </div>
+        <div class="welcome-feature">
+          <div class="welcome-feature-icon" style="background: rgba(168, 85, 247, 0.12); color: #A855F7;">${lucide("edit-3")}</div>
+          <div class="welcome-feature-text"><strong>Change anything, anytime.</strong> Your routine grows with you.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cta-wrap">
+      <button class="cta" data-action="start">Get started ${lucide("arrow-right")}</button>
+    </div>`;
+}
+
+// ── GOALS (LIST) ────────────────────────────────────────────────────────
+function renderGoals() {
+  const sel = state.goals;
+  const stripDots = [0, 1, 2].map(i => {
+    if (i < sel.length) {
+      const g = GOALS.find(x => x.id === sel[i]);
+      return `<div class="selection-strip-dot" data-cat="${g?.cat || ''}"></div>`;
+    }
+    return `<div class="selection-strip-dot"></div>`;
+  }).join("");
+
+  const stripText =
+    sel.length === 0 ? `<strong>Pick up to 3 goals.</strong> The first one is your top priority.` :
+    sel.length === 1 ? `<strong>Priority 1 picked.</strong> Add 1–2 more or continue.` :
+    sel.length === 2 ? `<strong>Priorities 1 & 2 picked.</strong> One more or continue.` :
+                       `<strong>All 3 priorities set.</strong>`;
+
+  return `
+    ${statusBar()}
+    ${stepper("goals")}
+    ${backBtn("welcome")}
+    <div class="h-pad">
+      <div class="eyebrow">Step 1 of 4</div>
+      <h1 class="title">What do you want to work on?</h1>
+      <p class="subtitle">Pick up to 3 goals. Order matters — your first pick is your top priority.</p>
+    </div>
+    <div class="selection-strip" id="selection-strip">
+      <div class="selection-strip-meter" id="strip-meter">${stripDots}</div>
+      <div class="selection-strip-text" id="strip-text">${stripText}</div>
+    </div>
+    <div class="goal-list" id="goal-list">${renderGoalRows()}</div>
+    <div class="cta-wrap">
+      <button class="cta" id="goals-cta" data-action="goto-conditions" ${sel.length === 0 ? "disabled" : ""}>
+        ${sel.length === 0 ? "Pick at least 1 goal" : `Continue with ${sel.length} goal${sel.length === 1 ? "" : "s"}`}
+        ${sel.length > 0 ? lucide("arrow-right") : ""}
+      </button>
+    </div>`;
+}
+
+function renderGoalRows() {
+  const sel = state.goals;
+  return GOALS.map(g => {
+    const rank = sel.indexOf(g.id);
+    const isSel = rank >= 0;
+    const isDisabled = !isSel && sel.length >= MAX_GOALS;
+    const cat = CAT_VARS[g.cat];
+    const styleVars = `--cat: ${cat.color}; --cat-bg: ${cat.bg}; --cat-glow: ${cat.glow};`;
+    return `
+      <button class="goal-row" data-goal="${g.id}" data-cat="${g.cat}"
+        ${isSel ? `data-selected="true"` : ""} ${isDisabled ? `data-disabled="true"` : ""}
+        style="${styleVars}">
+        <div class="goal-row-icon">${lucide(g.icon)}</div>
+        <div class="goal-row-text">
+          <div class="goal-row-name">${g.name}</div>
+          <div class="goal-row-desc">${g.desc || g.cat}</div>
+        </div>
+        ${isSel
+          ? `<div class="goal-row-priority">Priority ${rank + 1}</div>`
+          : `<div class="goal-row-pick"></div>`}
+      </button>`;
+  }).join("");
+}
+
+// ── CONDITIONS ──────────────────────────────────────────────────────────
+function renderConditions() {
+  const sel = state.conditions;
+  const count = sel.filter(c => c !== "none").length;
+  const q = state.conditionSearch.trim().toLowerCase();
+
+  // Split conditions: pinned (Other + None) always shown at the end,
+  // everything else is searchable. Selected items stay visible even if
+  // the search query would filter them out — so the user never loses sight
+  // of what they've already picked.
+  const pinned     = CONDITIONS.filter(c => c.id === "other" || c.id === "none");
+  const searchable = CONDITIONS.filter(c => c.id !== "other" && c.id !== "none");
+  const filtered   = q
+    ? searchable.filter(c => sel.includes(c.id) || c.name.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q))
+    : searchable;
+
+  const cardsHtml = renderConditionCards(filtered, pinned, sel, count, q);
+
+  return `
+    ${statusBar()}
+    ${stepper("conditions")}
+    ${backBtn("goals")}
+    <div class="h-pad">
+      <div class="eyebrow">Step 2 of 4</div>
+      <h1 class="title">Anything we should know?</h1>
+      <p class="subtitle">Pick up to 2 chronic conditions. They won't replace your goals — they shape how we deliver them.</p>
+    </div>
+    <div class="condition-search-wrap">
+      <div class="condition-search-icon">${lucide("search")}</div>
+      <input type="text" class="condition-search-input" id="condition-search-input"
+        placeholder="Search conditions…"
+        value="${state.conditionSearch.replace(/"/g, '&quot;')}"
+        autocomplete="off" />
+      ${q ? `<button class="condition-search-clear" id="condition-search-clear" aria-label="Clear search">${lucide("x")}</button>` : ""}
+    </div>
+    <div class="condition-list" id="condition-list">${cardsHtml}</div>
+    ${renderModifierCard(sel)}
+    <div class="cta-wrap">
+      <button class="cta" data-action="goto-intensity" ${sel.length === 0 ? "disabled" : ""}>
+        ${sel.length === 0 ? "Select or choose 'None'" : "Continue"}
+        ${sel.length > 0 ? lucide("arrow-right") : ""}
+      </button>
+    </div>`;
+}
+
+function renderConditionCards(filtered, pinned, sel, count, q) {
+  const showOtherInput = sel.includes("other");
+
+  const renderOne = (c) => {
+    const isSel = sel.includes(c.id);
+    const isDisabled = !isSel && count >= MAX_CONDITIONS && c.id !== "none";
+    return `
+      <button class="condition-card ${isSel ? "selected" : ""}" data-condition="${c.id}" ${isDisabled ? `data-disabled="true"` : ""}>
+        <div class="condition-icon">${lucide(c.icon)}</div>
+        <div class="condition-text">
+          <div class="condition-name">${c.name}</div>
+          <div class="condition-sub">${c.sub}</div>
+        </div>
+        <div class="condition-check">${isSel ? lucide("check") : ""}</div>
+      </button>
+      ${(c.id === "other" && showOtherInput) ? `
+        <div class="other-input-wrap">
+          <div class="other-input-label">What do you manage?</div>
+          <input type="text" class="other-input" id="other-input"
+            placeholder="e.g. fibromyalgia, IBS, migraines…"
+            value="${state.customCondition.replace(/"/g, '&quot;')}"
+            maxlength="80" />
+        </div>` : ""}
+    `;
+  };
+
+  let html = filtered.map(renderOne).join("");
+
+  // If a search query is active and there are no matches in the filtered list,
+  // show an empty-state hint encouraging Other
+  if (q && filtered.length === 0) {
+    html += `
+      <div class="condition-empty">
+        <div class="condition-empty-icon">${lucide("search-x")}</div>
+        <div class="condition-empty-text">
+          No condition matches "<strong>${q}</strong>".<br/>
+          You can add your own with <strong>Other</strong> below.
+        </div>
+      </div>`;
+  }
+
+  // Always show pinned (Other + None) — with a subtle divider above
+  if (pinned.length) {
+    html += `<div class="condition-divider"></div>`;
+    html += pinned.map(renderOne).join("");
+  }
+
+  return html;
+}
+
+function renderModifierCard(ids) {
+  if (!ids.length) return "";
+  const items = ids.map(cid => {
+    const c = CONDITIONS.find(x => x.id === cid);
+    const m = MODIFIERS[cid];
+    if (!c || !m) return "";
+    const displayName = cid === "other" && state.customCondition.trim() ? state.customCondition.trim() : c.name;
+    return `
+      <div class="modifier-item">
+        <div class="modifier-name">${displayName}</div>
+        <div class="modifier-impact">${m.impact}</div>
+        <div class="modifier-pillar">${lucide("sparkles")} ${m.pillar}</div>
+      </div>`;
+  }).join("");
+  return `
+    <div class="modifier-card">
+      <div class="modifier-header">
+        <div class="modifier-icon-wrap">${lucide("sparkles")}</div>
+        <div class="modifier-title">How this shapes your routine</div>
+      </div>
+      ${items}
+      ${state.goals.length > 0 ? `<div class="modifier-note">Your <strong>${state.goals.length === 1 ? "goal stays" : "goals stay"} primary</strong> — conditions only adjust how we deliver them.</div>` : ""}
+    </div>`;
+}
+
+// ── INTENSITY ───────────────────────────────────────────────────────────
+function renderIntensity() {
+  const lvl = INTENSITY_LEVELS[state.intensity];
+  const pct = (state.intensity / 4) * 100;
+  const mood = state.intensity <= 1 ? "curious" : state.intensity <= 2 ? "encouraging" : state.intensity === 3 ? "encouraging" : "proud";
+  return `
+    ${statusBar()}
+    ${stepper("intensity")}
+    ${backBtn("conditions")}
+    <div class="h-pad">
+      <div class="eyebrow">Step 3 of 4</div>
+      <h1 class="title">How hard do you want to push?</h1>
+      <p class="subtitle">We'll scale your routine to this level. You can change it anytime.</p>
+    </div>
+    <div class="intensity-mascot-wrap">
+      <div class="intensity-mascot" id="intensity-mascot">${mascot({ size: 130, mood })}</div>
+    </div>
+    <div class="intensity-display">
+      <h2 class="intensity-name" id="intensity-name">${lvl.name}</h2>
+      <p class="intensity-desc" id="intensity-desc">${lvl.desc}</p>
+      <div class="intensity-time-pill" id="intensity-time-pill">
+        ${lucide("clock")}
+        <span id="intensity-time-text">${lvl.time}</span>
+      </div>
+    </div>
+    <div class="slider-wrap">
+      <div class="slider-rail" id="slider-rail">
+        <div class="slider-thumb" id="slider-thumb" style="left: ${pct}%;"></div>
+      </div>
+      <div class="slider-ticks" id="slider-ticks">
+        ${INTENSITY_LEVELS.map((l, i) => `<div class="slider-tick ${i === state.intensity ? 'active' : ''}">${l.name}</div>`).join("")}
+      </div>
+    </div>
+    <div class="cta-wrap">
+      <button class="cta" data-action="goto-tone">Continue ${lucide("arrow-right")}</button>
+    </div>`;
+}
+
+function initSlider() {
+  const rail = document.getElementById("slider-rail");
+  if (!rail) return;
+  let dragging = false;
+  const updateFromX = (clientX) => {
+    const rect = rail.getBoundingClientRect();
+    const p = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
+    const newIdx = Math.round(p * 4);
+    if (newIdx !== state.intensity) {
+      state.intensity = newIdx;
+      const lvl = INTENSITY_LEVELS[state.intensity];
+      const mood = state.intensity <= 1 ? "curious" : state.intensity <= 2 ? "encouraging" : state.intensity === 3 ? "encouraging" : "proud";
+      const pct = (state.intensity / 4) * 100;
+      const thumb = document.getElementById("slider-thumb");
+      if (thumb) thumb.style.left = `${pct}%`;
+      const nameEl = document.getElementById("intensity-name");
+      if (nameEl) nameEl.textContent = lvl.name;
+      const descEl = document.getElementById("intensity-desc");
+      if (descEl) descEl.textContent = lvl.desc;
+      const timeEl = document.getElementById("intensity-time-text");
+      if (timeEl) timeEl.textContent = lvl.time;
+      document.querySelectorAll("#slider-ticks .slider-tick").forEach((t, i) =>
+        t.classList.toggle("active", i === state.intensity));
+      const mEl = document.getElementById("intensity-mascot");
+      if (mEl) mEl.innerHTML = mascot({ size: 130, mood });
+    }
+  };
+  // Mouse / pointer
+  rail.addEventListener("pointerdown", e => { dragging = true; document.body.style.cursor = "grabbing"; updateFromX(e.clientX); e.preventDefault(); });
+  document.addEventListener("pointermove", e => { if (dragging) updateFromX(e.clientX); });
+  const onUp = () => { dragging = false; document.body.style.cursor = ""; };
+  document.addEventListener("pointerup", onUp);
+  document.addEventListener("pointercancel", onUp);
+
+  // Touch (iOS Safari)
+  rail.addEventListener("touchstart", e => { dragging = true; updateFromX(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
+  rail.addEventListener("touchmove",  e => { if (dragging) { updateFromX(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
+  rail.addEventListener("touchend",   () => { dragging = false; });
+
+  rail.addEventListener("click", e => updateFromX(e.clientX));
+}
+
+// ── TONE ────────────────────────────────────────────────────────────────
+function renderTone() {
+  const cards = TONES.map(t => {
+    const isSel = state.tone === t.id;
+    return `
+      <button class="tone-card ${isSel ? "selected" : ""}" data-tone="${t.id}">
+        <div class="tone-mascot-wrap">${mascot({ size: 46, mood: t.mood, animate: false })}</div>
+        <div class="tone-content">
+          <div class="tone-name">${t.name}</div>
+          <div class="tone-desc">${t.desc}</div>
+        </div>
+        <div class="tone-radio"><div class="tone-radio-inner"></div></div>
+      </button>`;
+  }).join("");
+  return `
+    ${statusBar()}
+    ${stepper("tone")}
+    ${backBtn("intensity")}
+    <div class="h-pad">
+      <div class="eyebrow">Step 4 of 4 · Last one</div>
+      <h1 class="title">Pick your coach's voice.</h1>
+      <p class="subtitle">How should your mascot talk to you? Tap one to hear how it sounds.</p>
+    </div>
+    <div class="tone-preview ${state.tone ? 'active' : 'empty'}" id="tone-preview" data-tone-mood="${state.tone ? TONES.find(t => t.id === state.tone)?.mood : 'curious'}">
+      <div class="tone-preview-mascot" id="tone-preview-mascot">
+        ${state.tone ? mascot({ size: 64, mood: TONES.find(t => t.id === state.tone).mood }) : mascot({ size: 64, mood: "curious", animate: false })}
+      </div>
+      <div class="tone-preview-bubble" id="tone-preview-bubble">
+        ${state.tone
+          ? `<div class="tone-preview-text" id="tone-preview-text">${TONES.find(t => t.id === state.tone).samples[0]}</div>`
+          : `<div class="tone-preview-empty">Tap a coach to hear them.</div>`}
+      </div>
+    </div>
+    <div class="tone-list">${cards}</div>
+    <div class="cta-wrap">
+      <button class="cta" data-action="goto-handoff" ${!state.tone ? "disabled" : ""}>
+        ${!state.tone ? "Pick a voice" : "Generate my routine"}
+        ${state.tone ? lucide("arrow-right") : ""}
+      </button>
+    </div>`;
+}
+
+// Sample rotation for tone preview
+let toneSampleTimer = null;
+let toneSampleIdx = 0;
+function startTonePreviewRotation() {
+  stopTonePreviewRotation();
+  if (!state.tone) return;
+  const t = TONES.find(x => x.id === state.tone);
+  if (!t || !t.samples || t.samples.length <= 1) return;
+  toneSampleIdx = 0; // start fresh
+  toneSampleTimer = setInterval(() => {
+    toneSampleIdx = (toneSampleIdx + 1) % t.samples.length;
+    showToneSample(t.samples[toneSampleIdx]);
+  }, 3200);
+}
+function stopTonePreviewRotation() {
+  if (toneSampleTimer) { clearInterval(toneSampleTimer); toneSampleTimer = null; }
+}
+function showToneSample(text) {
+  const textEl = document.getElementById("tone-preview-text");
+  if (!textEl) return;
+  textEl.classList.add("fading");
+  setTimeout(() => {
+    textEl.textContent = text;
+    textEl.classList.remove("fading");
+  }, 200);
+}
+// When user selects a tone, swap preview to that mood + first sample + start rotation
+function refreshTonePreview() {
+  const preview = document.getElementById("tone-preview");
+  const mascotEl = document.getElementById("tone-preview-mascot");
+  const bubble = document.getElementById("tone-preview-bubble");
+  if (!preview || !mascotEl || !bubble) return;
+
+  if (!state.tone) {
+    preview.classList.add("empty");
+    preview.classList.remove("active");
+    preview.setAttribute("data-tone-mood", "curious");
+    mascotEl.innerHTML = mascot({ size: 64, mood: "curious", animate: false });
+    bubble.innerHTML = `<div class="tone-preview-empty">Tap a coach to hear them.</div>`;
+    refreshIcons();
+    return;
+  }
+
+  const t = TONES.find(x => x.id === state.tone);
+  preview.classList.remove("empty");
+  preview.classList.add("active", "punch"); // punch = scale-in animation
+  preview.setAttribute("data-tone-mood", t.mood);
+  // Trigger mascot nod
+  mascotEl.innerHTML = mascot({ size: 64, mood: t.mood });
+  // Show first sample with bubble fade-in
+  bubble.innerHTML = `<div class="tone-preview-text" id="tone-preview-text">${t.samples[0]}</div>`;
+  toneSampleIdx = 0;
+  // Remove the punch class after the animation ends so it can re-fire on next select
+  setTimeout(() => preview.classList.remove("punch"), 400);
+  startTonePreviewRotation();
+  refreshIcons();
+}
+
+// ── HANDOFF (the bridge to the routine screen) ─────────────────────────
+function renderHandoff() {
+  const goalsList = state.goals.map((id, i) => {
+    const g = GOALS.find(x => x.id === id);
+    return g ? `${i + 1}. ${g.name}` : "";
+  }).filter(Boolean).join(" · ");
+
+  const condList = state.conditions.map(id => {
+    if (id === "other" && state.customCondition.trim()) return state.customCondition.trim();
+    return CONDITIONS.find(c => c.id === id)?.name;
+  }).filter(Boolean).join(" · ");
+
+  return `
+    ${statusBar()}
+    <div class="handoff">
+      <div class="handoff-mascot">${mascot({ size: 130, mood: "happy" })}</div>
+      <div class="handoff-eyebrow">All set</div>
+      <h1 class="handoff-title">Your routine is ready.</h1>
+      <p class="handoff-sub">Tuned to your goals, your conditions, and the way you want to be coached. Tap below to see your first day.</p>
+
+      <div class="handoff-stats">
+        <div class="handoff-stat"><div class="handoff-stat-label">Goals</div><div class="handoff-stat-val">${goalsList || "—"}</div></div>
+        <div class="handoff-stat"><div class="handoff-stat-label">Conditions</div><div class="handoff-stat-val">${condList || "—"}</div></div>
+        <div class="handoff-stat"><div class="handoff-stat-label">Intensity</div><div class="handoff-stat-val">${INTENSITY_LEVELS[state.intensity].name}</div></div>
+        <div class="handoff-stat"><div class="handoff-stat-label">Coach</div><div class="handoff-stat-val">${TONES.find(t => t.id === state.tone)?.name || "—"}</div></div>
+      </div>
+
+    </div>
+    <div class="cta-wrap">
+      <button class="cta" data-action="goto-routine">See my routine ${lucide("arrow-right")}</button>
+    </div>`;
+}
+
+// ── ROUTINE SCREEN ──────────────────────────────────────────────────────
+function renderRoutine() {
+  const done = state.tasks.filter(t => t.status === "done").length;
+  const active = state.tasks.filter(t => t.status !== "skipped-indef").length;
+  const { mood, message } = deriveMood();
+
+  return `
+    ${statusBar()}
+    <div class="routine-sticky">
+      <div class="routine-header">
+        <div>
+          <h1 class="routine-title">Routine</h1>
+          <div class="routine-date">Wed · May 13</div>
+        </div>
+        <div class="routine-actions">
+          <button class="icon-btn" aria-label="Open calendar">${lucide("calendar")}</button>
+        </div>
+      </div>
+      ${renderWeekStrip()}
+      <hr class="divider" />
+    </div>
+    <div class="progress-card pressable" id="progress-card" data-mood="${mood}" role="button" tabindex="0" data-act="open-progress" aria-label="View progress on your goals">
+      <div class="progress-chevron">${lucide("chevron-right")}</div>
+      <div class="progress-text">
+        <div class="progress-label">Today <span class="progress-label-hint">·  Tap to see progress</span></div>
+        <div class="progress-count"><span id="progress-done">${done}</span><span class="slash">/</span><span class="total" id="progress-total">${active}</span></div>
+        <div class="progress-message" id="progress-message">${message}</div>
+      </div>
+      <div class="progress-mascot" id="progress-mascot">${mascot({ size: 100, mood })}</div>
+    </div>
+    <div id="task-feed">${renderTaskFeed()}</div>
+  `;
+}
+
+function renderWeekStrip() {
+  const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const today = 3;
+  const nums  = [10, 11, 12, 13, 14, 15, 16];
+  const total = state.tasks.filter(t => t.status !== "skipped-indef").length || 1;
+  const todayPct = Math.round(state.tasks.filter(t => t.status === "done").length / total * 100);
+  return `<div class="week-strip">` + days.map((d, i) => {
+    const isToday = i === today;
+    const pct = i === 1 ? 60 : i === today ? todayPct : 0;
+    const deg = (pct / 100) * 360;
+    return `
+      <div class="day-cell ${isToday ? 'today' : ''}">
+        <div class="day-name">${d}</div>
+        <div class="day-num">${nums[i]}</div>
+        <div class="day-ring" style="--ring-pct: ${deg}deg;"><div class="day-ring-fill"></div></div>
+      </div>`;
+  }).join("") + `</div>`;
+}
+
+function renderTaskFeed() {
+  const periods = ["morning", "afternoon", "evening"];
+  const periodLabels = { morning: "Morning", afternoon: "Afternoon", evening: "Evening" };
+  return periods.map(p => {
+    const periodTasks = state.tasks.filter(t => t.period === p && t.status !== "skipped-indef");
+    if (periodTasks.length === 0) return "";
+    return `
+      <div class="section-label" data-period="${p}">${lucide(PERIOD_ICON[p])}${periodLabels[p]}</div>
+      <div class="task-list">${periodTasks.map(t => renderTaskRow(t)).join("")}</div>
+    `;
+  }).join("");
+}
+
+function renderTaskRow(t) {
+  const cat = CAT_VARS[t.cat];
+  const styleVars = `--cat: ${cat.color}; --cat-bg: ${cat.bg};`;
+  const expanded = state.expandedId === t.id;
+  const isDone = t.status === "done";
+  const isSkipped = t.status === "skipped";
+  const cls = ["task-row", expanded ? "expanded" : "", isDone ? "completed" : "", isSkipped ? "skipped" : ""].filter(Boolean).join(" ");
+  const skippedBadge = isSkipped ? `<span class="skipped-badge">Skipped today</span>` : "";
+  const primaryBtn = t.kind === "simple"
+    ? `<button class="action-btn action-primary" data-kind="mark-done" data-task="${t.id}" data-act="mark-done">${lucide("check")}Mark done</button>`
+    : `<button class="action-btn action-primary" data-kind="fill-in" data-task="${t.id}" data-act="fill-in">${lucide("pencil-line")}Fill in</button>`;
+
+  // The header content — always rendered the same way
+  const headerContent = `
+    <div class="task-header-row" data-role="header">
+      <div class="task-icon">${lucide(t.icon)}</div>
+      <div class="task-body">
+        <div class="task-top">
+          <span class="task-category">${t.cat}</span>
+          <span class="task-time">${t.time}</span>
+          ${skippedBadge}
+        </div>
+        <div class="task-name">${t.name}</div>
+        <div class="task-meta">${t.meta}</div>
+      </div>
+      <div class="task-chevron">${lucide("chevron-down")}</div>
+    </div>`;
+
+  // Variant A: header always visible, actions below when expanded
+  // Variant B: when expanded, replace header with action row (Skip · Fill in · X)
+  const showActions = expanded && !isDone && !isSkipped;
+
+  if (state.taskVariant === "B" && showActions) {
+    // Variant B — actions REPLACE header content
+    return `
+      <div class="${cls}" data-task-row="${t.id}" role="button" tabindex="0" style="${styleVars}">
+        <div class="task-actions task-actions-b" data-role="actions-b">
+          <button class="action-btn action-skip" data-task="${t.id}" data-act="skip">${lucide("skip-forward")}Skip</button>
+          ${t.kind === "simple"
+            ? `<button class="action-btn action-primary" data-kind="mark-done" data-task="${t.id}" data-act="mark-done">${lucide("check")}Mark done</button>`
+            : `<button class="action-btn action-primary" data-kind="fill-in" data-task="${t.id}" data-act="fill-in">${lucide("pencil-line")}Fill in</button>`}
+          <button class="action-btn action-close" data-task="${t.id}" data-act="close">${lucide("x")}</button>
+        </div>
+      </div>`;
+  }
+
+  // Variant A — header + (when expanded) actions below
+  return `
+    <div class="${cls}" data-task-row="${t.id}" role="button" tabindex="0" style="${styleVars}">
+      ${headerContent}
+      ${showActions ? `
+        <div class="task-actions" data-role="actions">
+          ${primaryBtn}
+          <button class="action-btn action-skip" data-task="${t.id}" data-act="skip">${lucide("skip-forward")}Skip</button>
+          <button class="action-btn action-close" data-task="${t.id}" data-act="close">${lucide("x")}</button>
+        </div>
+      ` : ""}
+    </div>`;
+}
+
+// ── MOOD LOGIC ──────────────────────────────────────────────────────────
+function deriveMood() {
+  const ctx = {
+    done:                 state.tasks.filter(t => t.status === "done").length,
+    skipped:              state.tasks.filter(t => t.status === "skipped" || t.status === "skipped-indef").length,
+    active:               state.tasks.filter(t => t.status !== "skipped-indef").length,
+    hour:                 state.hour,
+    consecutiveSkipDays:  state.consecutiveSkipDays,
+  };
+  return voice("moodMessage", ctx);
+}
+
+// ── DETAIL VIEW ─────────────────────────────────────────────────────────
+function renderDetail() {
+  const t = state.tasks.find(x => x.id === state.detailTaskId);
+  if (!t) return renderRoutine();
+  const cat = CAT_VARS[t.cat];
+  const styleVars = `--cat: ${cat.color}; --cat-bg: ${cat.bg}; --cat-glow: ${cat.glow};`;
+
+  // Pick the right detail body
+  let body = "";
+  let canComplete = false;
+  if (t.detail === "sleep") {
+    body = renderSleepDetail();
+    canComplete = true; // can always submit, defaults are sensible
+  } else if (t.detail === "meal") {
+    body = renderMealDetail();
+    canComplete = !!state.detail.meal.portion;
+  } else if (t.detail === "strength") {
+    body = renderStrengthDetail();
+    canComplete = state.detail.strength.exercises.some(ex => ex.sets.some(s => s.reps && s.weight));
+  }
+
+  return `
+    <div style="${styleVars}">
+      ${statusBar()}
+      <div class="detail-header">
+        <button class="back-btn" data-action="back-to-routine">${lucide("arrow-left")}</button>
+        <span class="detail-category-pill">${t.cat}</span>
+      </div>
+      <div class="detail-hero">
+        <div class="detail-time-row">
+          <span class="detail-time-pill">${lucide("clock")} ${t.time}</span>
+          <span class="detail-time-pill">${lucide(PERIOD_ICON[t.period])} ${t.period}</span>
+        </div>
+        <h1 class="detail-name">${t.name}</h1>
+        <p class="detail-desc">${t.meta}</p>
+      </div>
+      <div class="detail-watcher">${mascot({ size: 80, mood: "curious", animate: true })}</div>
+      ${body}
+      <div class="detail-cta-wrap">
+        <button class="detail-cta-skip" data-act="skip" data-task="${t.id}">${lucide("skip-forward")}Skip</button>
+        <button class="detail-cta-complete" data-act="complete-detail" ${canComplete ? "" : "disabled"}>${lucide("check")}Complete</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderSleepDetail() {
+  const d = state.detail.sleep;
+  const hourBtns = [4, 5, 6, 7, 8, 9].map(h => `
+    <button class="rating-btn" data-set="sleep-hours" data-val="${h}" aria-pressed="${d.hours === h}">${h}h</button>
+  `).join("");
+  const qualBtns = [1, 2, 3, 4, 5].map(q => `
+    <button class="rating-btn" data-set="sleep-quality" data-val="${q}" aria-pressed="${d.quality === q}">${q}</button>
+  `).join("");
+  return `
+    <div class="detail-section">
+      <div class="detail-section-label">How long did you sleep?</div>
+      <div class="rating-row">${hourBtns}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-label">Quality · 1 (rough) to 5 (great)</div>
+      <div class="rating-row">${qualBtns}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-label">Anything to note? <span style="color: var(--text-disabled); font-weight: 500; text-transform: none;">optional</span></div>
+      <textarea class="field-textarea" id="sleep-note" placeholder="Woke up twice · vivid dreams · slept poorly because…">${d.note}</textarea>
+    </div>
+  `;
+}
+
+function renderMealDetail() {
+  const d = state.detail.meal;
+  const portions = [
+    { id: "small",   label: "Small",   icon: "minus-circle" },
+    { id: "regular", label: "Regular", icon: "circle" },
+    { id: "large",   label: "Large",   icon: "plus-circle" },
+  ];
+  const portionBtns = portions.map(p => `
+    <button class="segmented-btn" data-set="meal-portion" data-val="${p.id}" aria-pressed="${d.portion === p.id}">${lucide(p.icon)}${p.label}</button>
+  `).join("");
+
+  // Show an estimate card if portion is picked
+  let estimate = "";
+  if (d.portion) {
+    const cals = d.portion === "small" ? 380 : d.portion === "regular" ? 580 : 780;
+    const protein = d.portion === "small" ? 25 : d.portion === "regular" ? 38 : 52;
+    const carbs = d.portion === "small" ? 35 : d.portion === "regular" ? 55 : 75;
+    const fat = d.portion === "small" ? 14 : d.portion === "regular" ? 22 : 30;
+    estimate = `
+      <div class="estimate-card">
+        <div class="estimate-label">Estimated macros</div>
+        <div class="estimate-row">
+          <span><strong>~${cals}</strong> kcal</span>
+          <span><strong>${protein}g</strong> protein</span>
+          <span><strong>${carbs}g</strong> carbs</span>
+          <span><strong>${fat}g</strong> fat</span>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="detail-section">
+      <div class="detail-section-label">What did you eat?</div>
+      <input type="text" class="field-input" id="meal-desc" placeholder="e.g. chicken bowl with rice and salad" value="${d.description.replace(/"/g, '&quot;')}" />
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-label">Portion size</div>
+      <div class="segmented">${portionBtns}</div>
+    </div>
+    ${estimate}
+    <div class="detail-section">
+      <div class="detail-section-label">Notes <span style="color: var(--text-disabled); font-weight: 500; text-transform: none;">optional</span></div>
+      <textarea class="field-textarea" id="meal-notes" placeholder="How did you feel after? Any cravings? Skipped something?">${d.notes}</textarea>
+    </div>
+  `;
+}
+
+function renderStrengthDetail() {
+  const d = state.detail.strength;
+  return `
+    <div class="detail-section">
+      <div class="detail-section-label">Log your sets</div>
+      ${d.exercises.map((ex, exi) => renderExerciseCard(ex, exi)).join("")}
+    </div>
+  `;
+}
+
+function renderExerciseCard(ex, exi) {
+  return `
+    <div class="exercise-card" data-exercise="${exi}">
+      <div class="exercise-name">${ex.name}</div>
+      ${ex.sets.map((s, si) => `
+        <div class="set-row">
+          <div class="set-num">${si + 1}</div>
+          <div class="set-input-row">
+            <input type="number" class="set-input" data-strength-input="reps" data-ex="${exi}" data-si="${si}"
+              placeholder="reps" value="${s.reps}" inputmode="numeric" />
+          </div>
+          <div class="set-input-row">
+            <input type="number" class="set-input" data-strength-input="weight" data-ex="${exi}" data-si="${si}"
+              placeholder="kg" value="${s.weight}" inputmode="decimal" />
+            <span class="set-input-unit">kg</span>
+          </div>
+          <button class="set-remove" data-strength-remove data-ex="${exi}" data-si="${si}">${lucide("trash-2")}</button>
+        </div>
+      `).join("")}
+      <button class="add-set-btn" data-strength-addset data-ex="${exi}">${lucide("plus")}Add set</button>
+    </div>
+  `;
+}
+
+// ── TARGETED UPDATES (avoid full re-renders) ───────────────────────────
+// These mutate just the parts of the DOM that need to change, preserving
+// focus, scroll, entry animations, and input cursor positions.
+
+function updateMoodOnly(opts = {}) {
+  const card = document.getElementById("progress-card");
+  if (!card) return;
+  const done = state.tasks.filter(t => t.status === "done").length;
+  const active = state.tasks.filter(t => t.status !== "skipped-indef").length;
+  const { mood, message } = deriveMood();
+
+  const prevMood = card.getAttribute("data-mood");
+  card.setAttribute("data-mood", mood);
+
+  const doneEl = document.getElementById("progress-done");
+  const totalEl = document.getElementById("progress-total");
+  if (doneEl) doneEl.textContent = done;
+  if (totalEl) totalEl.textContent = active;
+  const msgEl = document.getElementById("progress-message");
+  if (msgEl) msgEl.innerHTML = message;
+
+  const mEl = document.getElementById("progress-mascot");
+  if (mEl) {
+    if (prevMood && prevMood !== mood) {
+      // Animated swap when mood actually changed
+      swapMascot(mEl, mood, { size: 100, celebrate: !!opts.celebrate });
+    } else if (opts.celebrate && mEl.firstElementChild) {
+      // Same mood, but caller wants a celebration anyway (e.g. task done but mood was already encouraging)
+      mEl.firstElementChild.classList.remove("mascot-celebrate");
+      // Reflow to restart animation
+      void mEl.firstElementChild.offsetWidth;
+      mEl.firstElementChild.classList.add("mascot-celebrate");
+      setTimeout(() => {
+        if (mEl.firstElementChild) mEl.firstElementChild.classList.remove("mascot-celebrate");
+      }, 720);
+    } else {
+      mEl.innerHTML = mascot({ size: 100, mood });
+    }
+  }
+  refreshIcons();
+}
+
+function refreshWeekStrip() {
+  const wrap = document.querySelector(".week-strip");
+  if (!wrap) return;
+  // Just update the today cell's ring percentage
+  const total = state.tasks.filter(t => t.status !== "skipped-indef").length || 1;
+  const todayPct = Math.round(state.tasks.filter(t => t.status === "done").length / total * 100);
+  const todayCell = wrap.querySelector(".day-cell.today .day-ring");
+  if (todayCell) todayCell.style.setProperty("--ring-pct", `${(todayPct / 100) * 360}deg`);
+}
+
+function refreshTaskRow(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  const oldRow = document.querySelector(`[data-task-row="${id}"]`);
+  if (!oldRow) return;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = renderTaskRow(t);
+  const newRow = tmp.firstElementChild;
+  oldRow.replaceWith(newRow);
+  refreshIcons();
+}
+
+// ----- Goals screen targeted updates -----
+function updateGoalsScreen() {
+  const sel = state.goals;
+  // Update each row's selection state
+  document.querySelectorAll(".goal-row[data-goal]").forEach(row => {
+    const id = Number(row.dataset.goal);
+    const rank = sel.indexOf(id);
+    const isSel = rank >= 0;
+    const isDisabled = !isSel && sel.length >= MAX_GOALS;
+
+    if (isSel) row.setAttribute("data-selected", "true");
+    else row.removeAttribute("data-selected");
+    if (isDisabled) row.setAttribute("data-disabled", "true");
+    else row.removeAttribute("data-disabled");
+
+    // Swap pick-circle <-> priority pill
+    const trailing = row.querySelector(".goal-row-pick, .goal-row-priority");
+    if (!trailing) return;
+    if (isSel) {
+      if (trailing.classList.contains("goal-row-pick")) {
+        const pill = document.createElement("div");
+        pill.className = "goal-row-priority";
+        pill.textContent = `Priority ${rank + 1}`;
+        trailing.replaceWith(pill);
+      } else {
+        trailing.textContent = `Priority ${rank + 1}`;
+      }
+    } else if (trailing.classList.contains("goal-row-priority")) {
+      const empty = document.createElement("div");
+      empty.className = "goal-row-pick";
+      trailing.replaceWith(empty);
+    }
+  });
+
+  // Update strip dots and text
+  const meter = document.getElementById("strip-meter");
+  if (meter) {
+    meter.innerHTML = [0, 1, 2].map(i => {
+      if (i < sel.length) {
+        const g = GOALS.find(x => x.id === sel[i]);
+        return `<div class="selection-strip-dot" data-cat="${g?.cat || ''}"></div>`;
+      }
+      return `<div class="selection-strip-dot"></div>`;
+    }).join("");
+  }
+  const text = document.getElementById("strip-text");
+  if (text) {
+    text.innerHTML =
+      sel.length === 0 ? `<strong>Pick up to 3 goals.</strong> The first one is your top priority.` :
+      sel.length === 1 ? `<strong>Priority 1 picked.</strong> Add 1–2 more or continue.` :
+      sel.length === 2 ? `<strong>Priorities 1 & 2 picked.</strong> One more or continue.` :
+                         `<strong>All 3 priorities set.</strong>`;
+  }
+
+  // Update CTA
+  const cta = document.getElementById("goals-cta");
+  if (cta) {
+    cta.disabled = sel.length === 0;
+    cta.innerHTML = sel.length === 0
+      ? "Pick at least 1 goal"
+      : `Continue with ${sel.length} goal${sel.length === 1 ? "" : "s"} ${lucide("arrow-right")}`;
+    refreshIcons();
+  }
+}
+
+// ----- Conditions screen targeted updates -----
+function updateConditionsScreen() {
+  const sel = state.conditions;
+  const count = sel.filter(c => c !== "none").length;
+
+  // Update each card's selection state
+  document.querySelectorAll(".condition-card[data-condition]").forEach(card => {
+    const id = card.dataset.condition;
+    const isSel = sel.includes(id);
+    const isDisabled = !isSel && count >= MAX_CONDITIONS && id !== "none";
+    card.classList.toggle("selected", isSel);
+    if (isDisabled) card.setAttribute("data-disabled", "true");
+    else card.removeAttribute("data-disabled");
+    const check = card.querySelector(".condition-check");
+    if (check) check.innerHTML = isSel ? lucide("check") : "";
+  });
+
+  // Mount/unmount the Other input field WITHOUT touching it if it's already there
+  const otherCard = document.querySelector(`.condition-card[data-condition="other"]`);
+  let otherInputWrap = document.querySelector(".other-input-wrap");
+  const wantsOther = sel.includes("other");
+  if (wantsOther && !otherInputWrap && otherCard) {
+    otherCard.insertAdjacentHTML("afterend", `
+      <div class="other-input-wrap">
+        <div class="other-input-label">What do you manage?</div>
+        <input type="text" class="other-input" id="other-input"
+          placeholder="e.g. fibromyalgia, IBS, migraines…"
+          value="${state.customCondition.replace(/"/g, '&quot;')}"
+          maxlength="80" />
+      </div>
+    `);
+  } else if (!wantsOther && otherInputWrap) {
+    otherInputWrap.remove();
+  }
+
+  // Update modifier panel — replace contents in place rather than re-mount
+  let modifier = document.querySelector(".modifier-card");
+  const html = renderModifierCard(sel);
+  if (html) {
+    if (modifier) {
+      const tmp = document.createElement("div");
+      tmp.innerHTML = html;
+      modifier.innerHTML = tmp.firstElementChild.innerHTML;
+    } else {
+      const list = document.querySelector(".condition-list");
+      if (list) list.insertAdjacentHTML("afterend", html);
+    }
+  } else if (modifier) {
+    modifier.remove();
+  }
+
+  // Update CTA
+  const cta = document.querySelector(".cta[data-action='goto-intensity']");
+  if (cta) {
+    cta.disabled = sel.length === 0;
+    cta.innerHTML = sel.length === 0
+      ? "Select or choose 'None'"
+      : `Continue ${lucide("arrow-right")}`;
+  }
+  refreshIcons();
+}
+
+// ----- Tone screen targeted updates -----
+function updateToneScreen() {
+  document.querySelectorAll(".tone-card[data-tone]").forEach(card => {
+    card.classList.toggle("selected", card.dataset.tone === state.tone);
+  });
+  const cta = document.querySelector(".cta[data-action='goto-handoff']");
+  if (cta) {
+    cta.disabled = !state.tone;
+    cta.innerHTML = !state.tone ? "Pick a voice" : `Generate my routine ${lucide("arrow-right")}`;
+    refreshIcons();
+  }
+  refreshTonePreview();
+}
+
+// ----- Detail screen targeted updates -----
+function refreshDetailCompleteButton() {
+  const cta = document.querySelector("[data-act='complete-detail']");
+  if (!cta) return;
+  const t = state.tasks.find(x => x.id === state.detailTaskId);
+  if (!t) return;
+  let can = false;
+  if (t.detail === "sleep") can = true;
+  else if (t.detail === "meal") can = !!state.detail.meal.portion;
+  else if (t.detail === "strength")
+    can = state.detail.strength.exercises.some(ex => ex.sets.some(s => s.reps && s.weight));
+  cta.disabled = !can;
+}
+
+function refreshMealEstimate() {
+  const portion = state.detail.meal.portion;
+  let card = document.querySelector(".estimate-card");
+  if (!portion) {
+    if (card) card.remove();
+    return;
+  }
+  const cals = portion === "small" ? 380 : portion === "regular" ? 580 : 780;
+  const protein = portion === "small" ? 25 : portion === "regular" ? 38 : 52;
+  const carbs = portion === "small" ? 35 : portion === "regular" ? 55 : 75;
+  const fat = portion === "small" ? 14 : portion === "regular" ? 22 : 30;
+  const html = `
+    <div class="estimate-card">
+      <div class="estimate-label">Estimated macros</div>
+      <div class="estimate-row">
+        <span><strong>~${cals}</strong> kcal</span>
+        <span><strong>${protein}g</strong> protein</span>
+        <span><strong>${carbs}g</strong> carbs</span>
+        <span><strong>${fat}g</strong> fat</span>
+      </div>
+    </div>`;
+  if (card) {
+    const tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    card.innerHTML = tmp.firstElementChild.innerHTML;
+  } else {
+    // Insert before the notes section
+    const notesSection = document.querySelector("#meal-notes")?.closest(".detail-section");
+    if (notesSection) notesSection.insertAdjacentHTML("beforebegin", html);
+  }
+}
+
+function refreshExerciseCard(exi) {
+  // Replace just the exercise card matching index `exi` with a freshly rendered one
+  const allCards = document.querySelectorAll(".exercise-card");
+  const oldCard = allCards[exi];
+  if (!oldCard) return;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = renderExerciseCard(state.detail.strength.exercises[exi], exi);
+  const newCard = tmp.firstElementChild;
+  oldCard.replaceWith(newCard);
+  refreshIcons();
+}
+
+// ── ACTIONS ─────────────────────────────────────────────────────────────
+function toggleGoal(id) {
+  id = Number(id);
+  const i = state.goals.indexOf(id);
+  if (i >= 0) state.goals.splice(i, 1);
+  else if (state.goals.length < MAX_GOALS) state.goals.push(id);
+  updateGoalsScreen();
+}
+
+function toggleCondition(id) {
+  if (id === "none") {
+    state.conditions = state.conditions.includes("none") ? [] : ["none"];
+  } else {
+    const clean = state.conditions.filter(x => x !== "none");
+    const i = clean.indexOf(id);
+    if (i >= 0) {
+      clean.splice(i, 1);
+      if (id === "other") state.customCondition = "";
+    } else if (clean.length < MAX_CONDITIONS) clean.push(id);
+    state.conditions = clean;
+  }
+  updateConditionsScreen();
+}
+
+function toggleRow(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t || t.status === "done" || t.status === "skipped") return;
+  const prevExpanded = state.expandedId;
+  state.expandedId = state.expandedId === id ? null : id;
+  // Refresh just the affected rows
+  if (prevExpanded !== null && prevExpanded !== id) refreshTaskRow(prevExpanded);
+  refreshTaskRow(id);
+}
+
+function markDone(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  state.expandedId = null;
+  t.status = "done";
+  // Animate the routine card first so the user sees the mood shift,
+  // then bring up the completion overlay a beat later.
+  refreshTaskRow(id);
+  updateMoodOnly({ celebrate: true });
+  refreshWeekStrip();
+  setTimeout(() => showCompletionOverlay(t), 280);
+}
+
+function completeWithSubstitute(id) {
+  // Complete a task using its 'lighter' substitute path.
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  state.expandedId = null;
+  t.status = "done";
+  t.completedAs = "substitute"; // mark how it was completed for the row badge
+  refreshTaskRow(id);
+  updateMoodOnly({ celebrate: true });
+  refreshWeekStrip();
+  showToast(`Saved as the lighter version. That still counts.`, "gentle", 2200);
+  setTimeout(() => showCompletionOverlay(t), 280);
+}
+
+function openDetail(id) {
+  state.detailTaskId = id;
+  state.screen = "detail";
+  state.expandedId = null;
+  render();
+}
+
+function completeDetail() {
+  const id = state.detailTaskId;
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  t.status = "done";
+  state.detailTaskId = null;
+  state.screen = "routine";
+  render();
+  // Once the routine screen is up, animate the mascot and bring up the overlay
+  setTimeout(() => updateMoodOnly({ celebrate: true }), 50);
+  setTimeout(() => showCompletionOverlay(t), 280);
+}
+
+function openSkipSheet(id) {
+  state.skipTargetId = id;
+  document.getElementById("skip-sheet-mascot").innerHTML = mascot({ size: 76, mood: "gentle", animate: false });
+  // Set tone-aware sheet copy
+  const titleEl = document.getElementById("skip-sheet-title");
+  const subEl   = document.getElementById("skip-sheet-sub");
+  if (titleEl) titleEl.textContent = voice("skipSheetTitle");
+  if (subEl)   subEl.textContent   = voice("skipSheetSub");
+  // Populate the substitute slot (only if the task has a lighter version)
+  const slot = document.getElementById("skip-substitute-slot");
+  if (slot) {
+    const t = state.tasks.find(x => x.id === id);
+    if (t && t.substitute) {
+      slot.innerHTML = `
+        <button class="skip-option skip-option-substitute" data-kind="substitute">
+          <div class="skip-option-icon">${lucide("leaf")}</div>
+          <div class="skip-option-text">
+            <div class="skip-option-name">${t.substitute.label}</div>
+            <div class="skip-option-desc">${t.substitute.summary}</div>
+          </div>
+          <div class="skip-option-arrow">${lucide("chevron-right")}</div>
+        </button>`;
+    } else {
+      slot.innerHTML = "";
+    }
+  }
+  document.getElementById("backdrop").classList.add("open");
+  document.getElementById("skip-sheet").classList.add("open");
+  refreshIcons();
+}
+
+function closeSkipSheet() {
+  document.getElementById("backdrop").classList.remove("open");
+  document.getElementById("skip-sheet").classList.remove("open");
+  state.skipTargetId = null;
+}
+
+function confirmSkip(kind) {
+  const id = state.skipTargetId;
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) { closeSkipSheet(); return; }
+  closeSkipSheet();
+  const wasOnDetail = state.screen === "detail";
+
+  // Substitute is a completion path, not a skip — short-circuit early
+  if (kind === "substitute") {
+    if (wasOnDetail) {
+      state.detailTaskId = null;
+      state.screen = "routine";
+      render();
+      // Let the routine screen settle, then run the substitute completion sequence
+      setTimeout(() => completeWithSubstitute(id), 50);
+    } else {
+      completeWithSubstitute(id);
+    }
+    return;
+  }
+
+  if (kind === "today") {
+    t.status = "skipped";
+    showToast(voice("skipTodayToast"), "gentle", 2400);
+  } else {
+    t.status = "skipped-indef";
+    showToast(voice("skipIndefToast", { taskName: t.name }), "info", 2400);
+  }
+  state.expandedId = null;
+  // If we were in the detail view, we must transition back to routine (full render)
+  if (wasOnDetail) {
+    state.detailTaskId = null;
+    state.screen = "routine";
+    render();
+    return;
+  }
+  // Otherwise targeted updates only
+  if (kind === "today") {
+    refreshTaskRow(id);
+  } else {
+    // skipped-indef → remove the row from the DOM entirely
+    const row = document.querySelector(`[data-task-row="${id}"]`);
+    if (row) row.remove();
+  }
+  updateMoodOnly();
+  refreshWeekStrip();
+}
+
+// ── PROGRESS MODAL ──────────────────────────────────────────────────────
+function openProgressModal() {
+  state.progressModalOpen = true;
+  state.progressPanelIdx = 0;
+  document.body.style.overflow = "hidden";
+  renderProgressModal();
+  attachProgressModalScrollListener();
+  document.getElementById("progress-modal-backdrop").classList.add("open");
+  document.getElementById("progress-modal").classList.add("open");
+}
+
+function closeProgressModal() {
+  state.progressModalOpen = false;
+  document.body.style.overflow = "";
+  document.getElementById("progress-modal-backdrop").classList.remove("open");
+  document.getElementById("progress-modal").classList.remove("open");
+}
+
+// ── TUNE GOAL SHEET ─────────────────────────────────────────────────────
+// Three orthogonal axes, each a 3-point segmented slider.
+// pace: how fast progress feels (0=slower, 1=balanced, 2=faster)
+// ambition: where the routine is heading (0=sustainable, 1=balanced, 2=ambitious)
+// effort: how hard right now (0=ease back, 1=steady, 2=push)
+const TUNE_AXES = [
+  {
+    id: "pace", label: "Pace",
+    options: [
+      { val: 0, label: "Slower",    icon: "turtle" },
+      { val: 1, label: "Balanced",  icon: "minus" },
+      { val: 2, label: "Faster",    icon: "zap" },
+    ]
+  },
+  {
+    id: "ambition", label: "Ambition",
+    options: [
+      { val: 0, label: "Sustainable", icon: "leaf" },
+      { val: 1, label: "Balanced",    icon: "minus" },
+      { val: 2, label: "Ambitious",   icon: "rocket" },
+    ]
+  },
+  {
+    id: "effort", label: "Effort right now",
+    options: [
+      { val: 0, label: "Ease back", icon: "moon" },
+      { val: 1, label: "Steady",    icon: "minus" },
+      { val: 2, label: "Push",      icon: "flame" },
+    ]
+  },
+];
+
+// Track per-goal tune state (only matters during a session for the prototype)
+state.tuneTargetGoalId = null;
+state.tuneValues = { pace: 1, ambition: 1, effort: 1 };
+
+function openTuneSheet(goalId) {
+  goalId = Number(goalId);
+  const g = GOALS.find(x => x.id === goalId);
+  if (!g) return;
+  state.tuneTargetGoalId = goalId;
+  // Reset to balanced when opening (the prototype doesn't persist tuned state across sessions)
+  state.tuneValues = { pace: 1, ambition: 1, effort: 1 };
+
+  document.getElementById("tune-sheet-title").textContent = g.name;
+  document.getElementById("tune-sheet-eyebrow").textContent = "Tune this goal";
+  renderTuneBody();
+
+  document.getElementById("tune-backdrop").classList.add("open");
+  document.getElementById("tune-sheet").classList.add("open");
+  refreshIcons();
+}
+
+function closeTuneSheet() {
+  document.getElementById("tune-backdrop").classList.remove("open");
+  document.getElementById("tune-sheet").classList.remove("open");
+  state.tuneTargetGoalId = null;
+}
+
+function renderTuneBody() {
+  const body = document.getElementById("tune-sheet-body");
+  if (!body) return;
+  body.innerHTML = TUNE_AXES.map(axis => {
+    const current = state.tuneValues[axis.id];
+    const currentLabel = axis.options.find(o => o.val === current)?.label || "Balanced";
+    return `
+      <div class="tune-row" data-tune-axis="${axis.id}">
+        <div class="tune-row-label-line">
+          <span class="tune-row-label">${axis.label}</span>
+          <span class="tune-row-value" data-tune-current="${axis.id}">${currentLabel}</span>
+        </div>
+        <div class="tune-segmented">
+          ${axis.options.map(opt => `
+            <button class="tune-segmented-btn"
+                    data-tune-set="${axis.id}"
+                    data-tune-val="${opt.val}"
+                    aria-pressed="${opt.val === current}">
+              ${lucide(opt.icon)}${opt.label}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+  refreshIcons();
+}
+
+function setTuneValue(axisId, val) {
+  val = Number(val);
+  state.tuneValues[axisId] = val;
+  const axis = TUNE_AXES.find(a => a.id === axisId);
+  if (!axis) return;
+  // Toggle aria-pressed on the segmented row only, no full re-render
+  document.querySelectorAll(`[data-tune-set="${axisId}"]`).forEach(b => {
+    b.setAttribute("aria-pressed", Number(b.dataset.tuneVal) === val);
+  });
+  const currentEl = document.querySelector(`[data-tune-current="${axisId}"]`);
+  if (currentEl) currentEl.textContent = axis.options.find(o => o.val === val)?.label || "Balanced";
+}
+
+// ── Apply + loading sequence ────────────────────────────────────────────
+// Tone-aware loading micro-copy that cycles while the routine "rebuilds"
+const TUNE_LOADING_STEPS = {
+  gentle:      ["Listening to your week…",   "Adjusting things gently…",  "Almost there…",      "All set."],
+  balanced:    ["Listening to your week…",   "Adjusting your routine…",   "Reshaping tomorrow…", "Done."],
+  accountable: ["Reading the data…",         "Recalibrating your plan…",  "Locking in changes…", "Done. Show up."],
+};
+
+let tuneLoadingTimer = null;
+function applyTune() {
+  // Close the sheet, then bring up the loading overlay
+  closeTuneSheet();
+  const overlay = document.getElementById("tune-loading");
+  const textEl  = document.getElementById("tune-loading-text");
+  const mascotEl = document.getElementById("tune-loading-mascot");
+  if (!overlay || !textEl || !mascotEl) return;
+
+  mascotEl.innerHTML = mascot({ size: 130, mood: "curious", animate: false });
+  refreshIcons();
+
+  const tone = state.tone || "balanced";
+  const steps = TUNE_LOADING_STEPS[tone] || TUNE_LOADING_STEPS.balanced;
+  let idx = 0;
+  textEl.textContent = steps[idx];
+  overlay.classList.add("show");
+
+  if (tuneLoadingTimer) clearInterval(tuneLoadingTimer);
+  tuneLoadingTimer = setInterval(() => {
+    idx++;
+    if (idx >= steps.length) {
+      clearInterval(tuneLoadingTimer); tuneLoadingTimer = null;
+      // Fade overlay out
+      setTimeout(() => {
+        overlay.classList.remove("show");
+        // Give a brief confirmation toast on the routine
+        showToast(`Your routine is updated. Tomorrow's adjusted.`, "success", 2400);
+        // Refresh the mood card so the mascot reflects the change with a celebration
+        if (state.screen === "routine") updateMoodOnly({ celebrate: true });
+      }, 380);
+      return;
+    }
+    // Fade text out then swap then fade in
+    textEl.classList.add("fading");
+    setTimeout(() => {
+      textEl.textContent = steps[idx];
+      textEl.classList.remove("fading");
+    }, 200);
+  }, 520);
+}
+
+function renderProgressModal() {
+  // Use the ordered list of selected goal ids — if none, fall back to a default trio
+  const goalIds = state.goals.length ? state.goals : [1, 6, 5];
+  const body = document.getElementById("progress-modal-body");
+  const footer = document.getElementById("progress-modal-footer");
+  if (!body || !footer) return;
+
+  body.innerHTML = goalIds.map((id, i) => renderProgressPanel(id, i)).join("");
+
+  // Footer — page dots + prev/next
+  if (goalIds.length > 1) {
+    const dots = goalIds.map((_, i) =>
+      `<div class="progress-modal-dot ${i === state.progressPanelIdx ? 'active' : ''}" data-panel-dot="${i}"></div>`
+    ).join("");
+    footer.innerHTML = `
+      <button class="progress-modal-nav" id="progress-prev" ${state.progressPanelIdx === 0 ? "disabled" : ""}>
+        <i data-lucide="chevron-left"></i>
+      </button>
+      <div class="progress-modal-dots">${dots}</div>
+      <button class="progress-modal-nav" id="progress-next" ${state.progressPanelIdx >= goalIds.length - 1 ? "disabled" : ""}>
+        <i data-lucide="chevron-right"></i>
+      </button>
+    `;
+  } else {
+    footer.innerHTML = "";
+  }
+  refreshIcons();
+  // Scroll to the active panel (instant on open, smooth on nav)
+  scrollToPanel(state.progressPanelIdx, false);
+}
+
+function renderProgressPanel(goalId, idx) {
+  const g = GOALS.find(x => x.id === goalId);
+  if (!g) return "";
+  const data = GOAL_PROGRESS[goalId] || GOAL_PROGRESS._default;
+  const cat = CAT_VARS[g.cat];
+  const styleVars = `--cat: ${cat.color}; --cat-bg: ${cat.bg}; --cat-glow: ${cat.glow};`;
+  const mood = TREND_MOOD[data.trend] || "curious";
+
+  const deltaIcon = data.primary.deltaDir === "up" ? "trending-up"
+                  : data.primary.deltaDir === "down" ? "trending-down"
+                  : "minus";
+
+  return `
+    <div class="progress-panel" data-panel-idx="${idx}" style="${styleVars}">
+      <div class="panel-mascot-wrap">${mascot({ size: 110, mood })}</div>
+      <div class="panel-title-row">
+        <h2 class="panel-title">${g.name}</h2>
+        <span class="panel-priority-pill">Priority ${idx + 1}</span>
+      </div>
+      <div class="panel-stage-row">
+        <span class="panel-stage-pill">${lucide("milestone")} ${data.stage}</span>
+        <span class="panel-week-text">· Week ${data.week}</span>
+      </div>
+
+      <div class="panel-primary">
+        <div class="panel-primary-label">${data.primary.label}</div>
+        <div class="panel-primary-value">${data.primary.value}${data.primary.unit ? `<span class="unit">${data.primary.unit}</span>` : ""}</div>
+        <div class="panel-primary-delta" data-dir="${data.primary.deltaDir}">${lucide(deltaIcon)} ${data.primary.delta}</div>
+      </div>
+
+      <div class="panel-secondary">
+        <div class="panel-secondary-text">
+          <div class="panel-secondary-label">${data.secondary.label}</div>
+          <div class="panel-secondary-value">${data.secondary.value}</div>
+          ${data.secondary.subtle ? `<div class="panel-secondary-subtle">${data.secondary.subtle}</div>` : ""}
+        </div>
+      </div>
+
+      <div class="panel-narration">
+        <div class="panel-narration-icon">${lucide("sparkles")}</div>
+        <div class="panel-narration-text">${goalNarration(goalId)}</div>
+      </div>
+
+      <button class="panel-tune-link" data-act="tune-goal" data-goal-id="${goalId}">
+        <div class="panel-tune-link-inner">${lucide("sliders-horizontal")}Tune this goal</div>
+        ${lucide("chevron-right")}
+      </button>
+    </div>
+  `;
+}
+
+function scrollToPanel(idx, smooth = true) {
+  const body = document.getElementById("progress-modal-body");
+  if (!body) return;
+  const panelWidth = body.clientWidth;
+  body.scrollTo({ left: panelWidth * idx, behavior: smooth ? "smooth" : "instant" });
+}
+
+function navigateProgressPanel(delta) {
+  const goalIds = state.goals.length ? state.goals : [1, 6, 5];
+  const newIdx = state.progressPanelIdx + delta;
+  if (newIdx < 0 || newIdx >= goalIds.length) return;
+  state.progressPanelIdx = newIdx;
+  scrollToPanel(newIdx, true);
+  updateProgressFooterOnly();
+}
+
+function updateProgressFooterOnly() {
+  // Update dots and nav buttons without re-rendering the panels (preserves scroll)
+  const goalIds = state.goals.length ? state.goals : [1, 6, 5];
+  document.querySelectorAll(".progress-modal-dot").forEach((d, i) =>
+    d.classList.toggle("active", i === state.progressPanelIdx));
+  const prev = document.getElementById("progress-prev");
+  const next = document.getElementById("progress-next");
+  if (prev) prev.disabled = state.progressPanelIdx === 0;
+  if (next) next.disabled = state.progressPanelIdx >= goalIds.length - 1;
+}
+
+// Update dots when user swipes/scrolls the body manually
+function attachProgressModalScrollListener() {
+  const body = document.getElementById("progress-modal-body");
+  if (!body || body.dataset.scrollBound === "1") return;
+  body.dataset.scrollBound = "1";
+  let scrollTimer = null;
+  body.addEventListener("scroll", () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      const w = body.clientWidth;
+      if (w === 0) return;
+      const idx = Math.round(body.scrollLeft / w);
+      if (idx !== state.progressPanelIdx) {
+        state.progressPanelIdx = idx;
+        updateProgressFooterOnly();
+      }
+    }, 80);
+  });
+}
+
+// ── COMPLETION OVERLAY ──────────────────────────────────────────────────
+function showCompletionOverlay(t) {
+  const overlay = document.getElementById("completion-overlay");
+  const mascotEl = document.getElementById("completion-mascot");
+  const msgEl = document.getElementById("completion-message");
+  const subEl = document.getElementById("completion-sub");
+
+  const done = state.tasks.filter(x => x.status === "done").length;
+  const active = state.tasks.filter(x => x.status !== "skipped-indef").length;
+  const isLast = done >= active;
+  const ctx = { isLast, done, active, taskName: t?.name || "" };
+
+  const mood = isLast ? "proud" : "happy";
+  const message = voice("completionTitle", ctx);
+  const sub = voice("completionSub", ctx);
+
+  mascotEl.innerHTML = mascot({ size: 140, mood, animate: true });
+  msgEl.textContent = message;
+  subEl.textContent = sub;
+  overlay.classList.add("show");
+  refreshIcons();
+
+  setTimeout(() => overlay.classList.remove("show"), isLast ? 2400 : 1600);
+}
+
+// ── TOAST ───────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(text, tone = "success", duration = 2000) {
+  clearTimeout(toastTimer);
+  const toast = document.getElementById("toast");
+  const icon = document.getElementById("toast-icon");
+  const txt = document.getElementById("toast-text");
+  icon.setAttribute("data-tone", tone);
+  icon.innerHTML = tone === "success" ? lucide("check") : tone === "gentle" ? lucide("heart") : lucide("info");
+  txt.textContent = text;
+  toast.classList.add("show");
+  refreshIcons();
+  toastTimer = setTimeout(() => toast.classList.remove("show"), duration);
+}
+
+// ── HANDLE ACTIONS ──────────────────────────────────────────────────────
+function handleAction(action) {
+  switch (action) {
+    case "start":             state.screen = "goals"; render(); break;
+    case "goto-conditions":   if (state.goals.length) { state.screen = "conditions"; render(); } break;
+    case "goto-intensity":    if (state.conditions.length) { state.screen = "intensity"; render(); } break;
+    case "goto-tone":         state.screen = "tone"; render(); break;
+    case "goto-handoff":      if (state.tone) { state.screen = "handoff"; render(); } break;
+    case "goto-routine":      state.screen = "routine"; render(); break;
+    case "back-to-welcome":   state.screen = "welcome"; render(); break;
+    case "back-to-goals":     state.screen = "goals"; render(); break;
+    case "back-to-conditions":state.screen = "conditions"; render(); break;
+    case "back-to-intensity": state.screen = "intensity"; render(); break;
+    case "back-to-tone":      state.screen = "tone"; render(); break;
+    case "back-to-routine":   state.detailTaskId = null; state.screen = "routine"; render(); break;
+    case "complete-detail":   completeDetail(); break;
+  }
+}
+
+// ── HARNESS ─────────────────────────────────────────────────────────────
+function jumpTo(screen) {
+  if (screen === "routine" || screen === "handoff") {
+    if (!state.tone) state.tone = "balanced";
+    if (state.goals.length === 0) state.goals = [1, 5, 6];
+    if (state.conditions.length === 0) state.conditions = ["none"];
+  }
+  state.screen = screen;
+  render();
+}
+function setHour(h) {
+  state.hour = h;
+  document.querySelectorAll("[data-time]").forEach(b => b.classList.toggle("active", Number(b.dataset.time) === h));
+  document.getElementById("harness-time-label").textContent = h.toString().padStart(2, "0") + ":00";
+  if (state.screen === "routine") updateMoodOnly();
+}
+
+function setVariant(v) {
+  if (v === state.taskVariant) return;
+  state.taskVariant = v;
+  document.querySelectorAll("[data-variant]").forEach(b => b.classList.toggle("active", b.dataset.variant === v));
+  document.getElementById("variant-label").textContent =
+    v === "A" ? "Variant A · actions below" : "Variant B · replace content";
+  // If we're on the routine screen with an expanded row, re-render just that row
+  if (state.screen === "routine" && state.expandedId !== null) {
+    refreshTaskRow(state.expandedId);
+  }
+}
+function quickAction(a) {
+  if (a === "reset") {
+    state.tasks.forEach(t => t.status = "pending");
+    state.consecutiveSkipDays = 0;
+  } else if (a === "complete-2") {
+    state.tasks.forEach(t => t.status = "pending");
+    state.tasks[0].status = "done";
+    state.tasks[1].status = "done";
+  } else if (a === "complete-all") {
+    state.tasks.forEach(t => t.status = "done");
+  } else if (a === "skip-pattern") {
+    state.consecutiveSkipDays = 3;
+    state.tasks.forEach(t => t.status = "pending");
+  }
+  state.expandedId = null;
+  // Refresh the task feed contents only, plus mood + week strip
+  const feed = document.getElementById("task-feed");
+  if (feed) feed.innerHTML = renderTaskFeed();
+  updateMoodOnly();
+  refreshWeekStrip();
+  refreshIcons();
+}
+
+// ── EVENT WIRING ────────────────────────────────────────────────────────
+document.addEventListener("click", e => {
+  // Harness toggle
+  if (e.target.closest("#harness-toggle")) {
+    document.getElementById("harness").classList.toggle("open");
+    return;
+  }
+  const jumpBtn = e.target.closest("[data-jump]");
+  if (jumpBtn) { jumpTo(jumpBtn.dataset.jump); return; }
+  const vBtn = e.target.closest("[data-variant]");
+  if (vBtn) { setVariant(vBtn.dataset.variant); return; }
+  const tBtn = e.target.closest("[data-time]");
+  if (tBtn) { setHour(Number(tBtn.dataset.time)); return; }
+  const qBtn = e.target.closest("[data-quick]");
+  if (qBtn) { quickAction(qBtn.dataset.quick); return; }
+
+  // Goals / conditions toggles
+  const gBtn = e.target.closest("[data-goal]");
+  if (gBtn) { toggleGoal(gBtn.dataset.goal); return; }
+  const cBtn = e.target.closest("[data-condition]");
+  if (cBtn) { toggleCondition(cBtn.dataset.condition); return; }
+  const toneBtn = e.target.closest("[data-tone]");
+  if (toneBtn) { state.tone = toneBtn.dataset.tone; updateToneScreen(); return; }
+
+  // Task actions
+  const actBtn = e.target.closest("[data-act]");
+  if (actBtn) {
+    e.stopPropagation();
+    const id = Number(actBtn.dataset.task) || state.detailTaskId;
+    const act = actBtn.dataset.act;
+    if (act === "mark-done") markDone(id);
+    else if (act === "fill-in") openDetail(id);
+    else if (act === "skip") openSkipSheet(id);
+    else if (act === "close") {
+      const prev = state.expandedId;
+      state.expandedId = null;
+      if (prev !== null) refreshTaskRow(prev);
+    }
+    else if (act === "complete-detail") completeDetail();
+    else if (act === "open-progress") openProgressModal();
+    else if (act === "tune-goal") openTuneSheet(actBtn.dataset.goalId);
+    return;
+  }
+
+  // Detail setters (rating buttons, segmented, etc.)
+  const setBtn = e.target.closest("[data-set]");
+  if (setBtn) {
+    const set = setBtn.dataset.set;
+    const val = setBtn.dataset.val;
+    if (set === "sleep-hours") {
+      state.detail.sleep.hours = Number(val);
+      // Toggle aria-pressed on the sibling row only
+      const row = setBtn.closest(".rating-row");
+      if (row) row.querySelectorAll(".rating-btn").forEach(b =>
+        b.setAttribute("aria-pressed", b.dataset.val === val));
+    } else if (set === "sleep-quality") {
+      state.detail.sleep.quality = Number(val);
+      const row = setBtn.closest(".rating-row");
+      if (row) row.querySelectorAll(".rating-btn").forEach(b =>
+        b.setAttribute("aria-pressed", b.dataset.val === val));
+    } else if (set === "meal-portion") {
+      state.detail.meal.portion = val;
+      const row = setBtn.closest(".segmented");
+      if (row) row.querySelectorAll(".segmented-btn").forEach(b =>
+        b.setAttribute("aria-pressed", b.dataset.val === val));
+      refreshMealEstimate();
+    }
+    refreshDetailCompleteButton();
+    return;
+  }
+
+  // Strength: add set
+  const addSetBtn = e.target.closest("[data-strength-addset]");
+  if (addSetBtn) {
+    const exi = Number(addSetBtn.dataset.ex);
+    state.detail.strength.exercises[exi].sets.push({ reps: "", weight: "" });
+    refreshExerciseCard(exi);
+    refreshDetailCompleteButton();
+    return;
+  }
+  // Strength: remove set
+  const rmBtn = e.target.closest("[data-strength-remove]");
+  if (rmBtn) {
+    const exi = Number(rmBtn.dataset.ex);
+    const si = Number(rmBtn.dataset.si);
+    if (state.detail.strength.exercises[exi].sets.length > 1) {
+      state.detail.strength.exercises[exi].sets.splice(si, 1);
+      refreshExerciseCard(exi);
+      refreshDetailCompleteButton();
+    }
+    return;
+  }
+
+  // Task row click
+  const row = e.target.closest("[data-task-row]");
+  if (row) { toggleRow(Number(row.dataset.taskRow)); return; }
+
+  // Skip sheet
+  const skipOpt = e.target.closest(".skip-option");
+  if (skipOpt) { confirmSkip(skipOpt.dataset.kind); return; }
+  if (e.target.id === "skip-cancel" || e.target.id === "backdrop") { closeSkipSheet(); return; }
+
+  // Progress modal
+  if (e.target.closest("#progress-modal-close") || e.target.id === "progress-modal-backdrop") {
+    closeProgressModal();
+    return;
+  }
+  if (e.target.closest("#progress-prev")) { navigateProgressPanel(-1); return; }
+  if (e.target.closest("#progress-next")) { navigateProgressPanel(1);  return; }
+  const dot = e.target.closest("[data-panel-dot]");
+  if (dot) {
+    state.progressPanelIdx = Number(dot.dataset.panelDot);
+    scrollToPanel(state.progressPanelIdx, true);
+    updateProgressFooterOnly();
+    return;
+  }
+
+  // Tune sheet
+  if (e.target.id === "tune-cancel" || e.target.id === "tune-backdrop") {
+    closeTuneSheet();
+    return;
+  }
+  if (e.target.closest("#tune-apply")) { applyTune(); return; }
+  const tuneSet = e.target.closest("[data-tune-set]");
+  if (tuneSet) {
+    setTuneValue(tuneSet.dataset.tuneSet, tuneSet.dataset.tuneVal);
+    return;
+  }
+
+  // Condition search clear
+  if (e.target.closest("#condition-search-clear")) {
+    state.conditionSearch = "";
+    const input = document.getElementById("condition-search-input");
+    if (input) { input.value = ""; input.focus(); }
+    updateConditionListOnly();
+    return;
+  }
+
+  // Action shortcuts
+  const aBtn = e.target.closest("[data-action]");
+  if (aBtn) { handleAction(aBtn.dataset.action); return; }
+});
+
+// Text inputs — live-update state without re-rendering
+document.addEventListener("input", e => {
+  if (e.target.id === "other-input") state.customCondition = e.target.value;
+  else if (e.target.id === "condition-search-input") {
+    state.conditionSearch = e.target.value;
+    updateConditionListOnly();
+  }
+  else if (e.target.id === "sleep-note") state.detail.sleep.note = e.target.value;
+  else if (e.target.id === "meal-desc") state.detail.meal.description = e.target.value;
+  else if (e.target.id === "meal-notes") state.detail.meal.notes = e.target.value;
+  else if (e.target.matches("[data-strength-input]")) {
+    const kind = e.target.dataset.strengthInput;
+    const exi = Number(e.target.dataset.ex);
+    const si  = Number(e.target.dataset.si);
+    state.detail.strength.exercises[exi].sets[si][kind] = e.target.value;
+    const cta = document.querySelector("[data-act='complete-detail']");
+    if (cta) {
+      const can = state.detail.strength.exercises.some(ex => ex.sets.some(s => s.reps && s.weight));
+      cta.disabled = !can;
+    }
+  }
+});
+
+// Update the condition list only — preserves search input focus and cursor
+function updateConditionListOnly() {
+  const sel = state.conditions;
+  const count = sel.filter(c => c !== "none").length;
+  const q = state.conditionSearch.trim().toLowerCase();
+  const pinned     = CONDITIONS.filter(c => c.id === "other" || c.id === "none");
+  const searchable = CONDITIONS.filter(c => c.id !== "other" && c.id !== "none");
+  const filtered   = q
+    ? searchable.filter(c => sel.includes(c.id) || c.name.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q))
+    : searchable;
+
+  const list = document.getElementById("condition-list");
+  if (list) list.innerHTML = renderConditionCards(filtered, pinned, sel, count, q);
+
+  // Update the X-clear button visibility
+  const wrap = document.querySelector(".condition-search-wrap");
+  if (wrap) {
+    let clearBtn = document.getElementById("condition-search-clear");
+    if (q && !clearBtn) {
+      const btnHtml = `<button class="condition-search-clear" id="condition-search-clear" aria-label="Clear search">${lucide("x")}</button>`;
+      wrap.insertAdjacentHTML("beforeend", btnHtml);
+    } else if (!q && clearBtn) {
+      clearBtn.remove();
+    }
+  }
+  refreshIcons();
+}
+
+// Keyboard support for div-role=button rows
+document.addEventListener("keydown", e => {
+  // Escape: close in priority order — tune sheet, progress modal, then skip sheet
+  if (e.key === "Escape") {
+    if (state.tuneTargetGoalId !== null) { closeTuneSheet(); return; }
+    if (state.progressModalOpen) { closeProgressModal(); return; }
+    if (state.skipTargetId !== null) { closeSkipSheet(); return; }
+  }
+  // Arrow keys: nav through progress panels when modal is open
+  if (state.progressModalOpen) {
+    if (e.key === "ArrowLeft")  { navigateProgressPanel(-1); return; }
+    if (e.key === "ArrowRight") { navigateProgressPanel(1);  return; }
+  }
+  // Enter/Space: activate role=button task rows
+  if (e.key !== "Enter" && e.key !== " ") return;
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  const row = e.target.closest("[data-task-row]");
+  if (row) { e.preventDefault(); toggleRow(Number(row.dataset.taskRow)); }
+  // Also: tap-card-with-keyboard should open the progress modal
+  const progressCard = e.target.closest('[data-act="open-progress"]');
+  if (progressCard) { e.preventDefault(); openProgressModal(); }
+});
+
+// ── INITIAL RENDER ──────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
